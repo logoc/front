@@ -4,33 +4,32 @@
     <a-card class="general-card onelineCard" style="height: calc(100% - 50px);">
       <a-row style="margin-bottom: 10px">
         <a-col
-          :span="8"
+          :span="14"
            style="text-align: left;"
         >
-        <a-space>
-
-          <a-upload
-              :accept="upaccept"
-              :show-file-list="false"
-              :multiple="true"
-              :custom-request="customRequest"
-          >
-            <template #upload-button>
-              <a-button type="primary">
-                <template #icon>
-                  <icon-upload />
-                </template>批量上传
-              </a-button>
-            </template>
-          </a-upload>
-
-          <a-button type="primary"  @click="createRule">
+          <a-space>
+            <a-input :style="{width:'300px'}" v-model="formModel.name" placeholder="用户名" allow-clear >
+              <template #prefix>用户名: </template>
+            </a-input>
+            <a-range-picker v-model="formModel.createdtime" :style="{width:'400px'}" >
+              <template #prefix>下载日期: </template>
+            </a-range-picker>
+          </a-space>
+        </a-col>
+        <a-col
+          :span="10"
+           style="text-align: right;"
+        >
+          <a-space>
+            <a-button type="primary" @click="search">
             <template #icon>
-              <icon-plus />
-            </template>
-            新增
-          </a-button>
-
+              <icon-search />
+              </template>
+              查询
+            </a-button>
+            <a-button @click="reset">
+              {{ $t('searchTable.form.reset') }}
+            </a-button>
           </a-space>
         </a-col>
       </a-row>
@@ -48,48 +47,12 @@
         @page-change="handlePaageChange" 
         @page-size-change="handlePaageSizeChange" 
       >
-        <template #name="{ record }">
-         {{ record.name }}<span v-if="record.nickname" style="padding-left: 5px;color: var(--color-neutral-4);">{{ record.nickname }}</span>
-        </template>
-        <template #mimetype="{ record }">
-          <img
-              v-if="record.mimetype.includes('image')||record.mimetype.includes('video')"
-              :alt="record.title"
-              style="height: 50px;border-radius: 5px;"
-              :src="record.mimetype.includes('image')?record.url:record.cover_url"
-            />
-        </template>
         <template #createtime="{record,column}">
-          {{dayjs(record[column.dataIndex]*1000).format("YYYY-MM-DD")}}
-        </template>
-        <template #status="{ record }">
-          <a-switch type="round" v-model="record.status" :checked-value="0" :unchecked-value="1" @change="handleStatus(record)">
-              <template #checked>
-                开
-              </template>
-              <template #unchecked>
-                关
-              </template>
-            </a-switch>
-        </template>
-        <template #filesize="{ record }">
-          {{filesizeFont(record.filesize)}}
-        </template>
-        <template #type="{record,column}">
-          <a-tag :color="getTypeFont(record[column.dataIndex],'color')">{{ getTypeFont(record[column.dataIndex],'text') }}</a-tag>
-        </template>
-        <template #operations="{ record }">
-          <Icon icon="svgfont-bianji1" class="iconbtn" @click="handleEdit(record)" :size="18" color="#0960bd"></Icon>
-          <a-divider direction="vertical" />
-          <a-popconfirm content="您确定要删除吗?" @ok="handleDel(record)">
-            <Icon icon="svgfont-icon7" class="iconbtn" :size="18" color="#ed6f6f"></Icon>
-          </a-popconfirm>
+          {{dayjs(record[column.dataIndex]*1000).format("YYYY-MM-DD HH:mm:ss")}}
         </template>
       </a-table>
     </a-card>
     <!--表单-->
-    <AddForm @register="registerModal" @success="handleData"/>
-    <CateIndex @register="registerCateIndexModal" @success="handleData"/>
   </div>
 </template>
 
@@ -101,13 +64,11 @@
   import cloneDeep from 'lodash/cloneDeep';
   import dayjs from 'dayjs';
   //api
-  import { getList,upStatus,del} from '@/api/matter/picture';
+  import { getExportLog } from '@/api/project/project';
   //数据
   import { columns} from './data';
   //表单
-  import { useModal } from '/@/components/Modal';
-  import AddForm from './AddForm.vue';
-  // import CateIndex from './cate/index.vue';
+
   import { useI18n } from 'vue-i18n';
   import {Icon} from '@/components/Icon';
   import { Message } from '@arco-design/web-vue';
@@ -115,27 +76,6 @@
   import { useRoute } from 'vue-router'
   const route = useRoute();
   const { t } = useI18n();
-  const [registerModal, { openModal }] = useModal();
-  const [registerCateIndexModal, { openModal:cateModdal }] = useModal();
- 
-  const densityList = computed(() => [
-    {
-      name: t('searchTable.size.mini'),
-      value: 'mini',
-    },
-    {
-      name: t('searchTable.size.small'),
-      value: 'small',
-    },
-    {
-      name: t('searchTable.size.medium'),
-      value: 'medium',
-    },
-    {
-      name: t('searchTable.size.large'),
-      value: 'large',
-    },
-  ]);
   //分页
   const basePagination: Pagination = {
     current: 1,
@@ -157,18 +97,15 @@
    //查询字段
    const generateFormModel = () => {
     return {
-      trade_no: '',
-      title: '',
       name: '',
-      createdTime: '',
-      status: '',
+      createdtime: '',
     };
   };
   const formModel = ref(generateFormModel());
   const fetchData = async () => {
     setLoading(true);
     try {
-      const data= await getList({page:pagination.current,pageSize:pagination.pageSize,...formModel.value});
+      const data= await getExportLog({page:pagination.current,pageSize:pagination.pageSize,...formModel.value});
       renderData.value = data.items;
       pagination.current = data.page;
       pagination.total = data.total;
@@ -194,12 +131,6 @@
   };
 
   fetchData();
-  const handleSelectDensity = (
-    val: string | number | Record<string, any> | undefined,
-    e: Event
-  ) => {
-    size.value = val as SizeProps;
-  };
 
   watch(
     () => columns.value,
@@ -212,31 +143,7 @@
     },
     { deep: true, immediate: true }
   );
-  //管理分类
-  const handleManager=()=>{
-    cateModdal(true, {
-      isUpdate: false,
-      record:null
-    });
-  }
-  //添加
-  const createRule=()=>{
-    openModal(true, {
-      isUpdate: false,
-      record:null
-    });
-  }
-  //编辑数据
-  const handleEdit=async(record:any)=>{
-    openModal(true, {
-      isUpdate: true,
-      record:record
-    });
-  }
-  //更新数据
-  const handleData=async()=>{
-    fetchData();
-  }
+
   //分页
   const handlePaageChange = (page:any) => {
     pagination.current=page

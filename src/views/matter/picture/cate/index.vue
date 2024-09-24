@@ -71,7 +71,7 @@
         </a-table>
       </div>
     </div>
-       <!--表单-->
+   <!--表单-->
    <AddForm ref="addFormRef" @success="search"/>
   </BasicModal>
 </template>

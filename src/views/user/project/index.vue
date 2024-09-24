@@ -5,15 +5,16 @@
       <a-row style="margin-bottom: 10px">
         <a-col :span="24" >
           <a-space size="large">
-            <a-select v-model="formModel.platform" :options="platOptions" placeholder="平台类型" :style="{width:'220px'}">
+            <a-select v-model="formModel.platform" placeholder="平台类型" :style="{width:'220px'}">
               <template #prefix>平台类型:</template>
+              <a-option v-for="item in platformList" :value="item.cate">{{ item.cate }}</a-option>
             </a-select>
             <a-select v-model="formModel.fansCnt" :options="fansCntOptions" placeholder="粉丝数" :style="{width:'220px'}" >
               <template #prefix>粉丝数:</template>
             </a-select>
             <a-select v-model="formModel.priceRange" :options="pricesOptions" placeholder="价格区间" :style="{width:'250px'}" >
               <template #prefix>
-                价格区间:
+                平台价:
               </template>
             </a-select>
           </a-space>
@@ -22,23 +23,23 @@
 
       <a-row style="margin-bottom: 10px">
         <a-col :span="24" >
-          <a-checkbox-group :default-value="[0]" v-model="formModel.accountType" >
-          <a-tag size="large">账号类型:</a-tag>
-          <template v-for="item in checkBoxOptions" :key="item" >
-            <a-checkbox :value="item.value">
-              <template #checkbox="{ checked }">
-                <a-tag size="large" :checked="checked" default-checked checkable color="arcoblue">{{ item.label }}</a-tag>
-              </template>
-            </a-checkbox>
-          </template>
-        </a-checkbox-group>
+          <a-checkbox-group v-model="formModel.accountType" @change="handleChange">
+            <a-tag size="large">账号类型:</a-tag>
+            <template v-for="item in accountTypeList" :key="item" >
+              <a-checkbox :value="item.cate">
+                <template #checkbox="{ checked }">
+                  <a-tag size="large" :checked="checked" default-checked checkable color="arcoblue">{{ item.cate }}</a-tag>
+                </template>
+              </a-checkbox>
+            </template>
+          </a-checkbox-group>
       </a-col>
     </a-row>
 
     <a-row style="margin-bottom: 10px">
       <a-col :span="14">
         <a-space>
-          <a-input :style="{width:'250px'}" v-model="formModel.accountNikeName" placeholder="账号昵称" allow-clear >
+          <a-input :style="{width:'300px'}" v-model="formModel.accountNikeName" placeholder="账号昵称" allow-clear >
             <template #prefix>账号昵称: </template>
           </a-input>
           <a-input :style="{width:'250px'}" v-model="formModel.projectNo" placeholder="项目号" allow-clear >
@@ -113,18 +114,16 @@
   import { computed, ref, reactive, watch, onMounted } from 'vue';
   import useLoading from '@/hooks/loading';
   import type { TableColumnData } from '@arco-design/web-vue/es/table/interface';
-  import type { SelectOptionData } from '@arco-design/web-vue/es/select/interface';
   import cloneDeep from 'lodash/cloneDeep';
   import dayjs from 'dayjs';
   //api
-  import { getSearch, exportData, del} from '@/api/project/project';
+  import { getSearchOwner, exportDataOwner, del, CateItem, getCateList} from '@/api/project/project';
   //数据
   import { columns } from './data';
   //表单
   import { useModal } from '/@/components/Modal';
   import EditForm from './EditForm.vue';
   import { useI18n } from 'vue-i18n';
-  import axios from 'axios';
   import {Icon} from '@/components/Icon';
   import { Message } from '@arco-design/web-vue';
   import { Pagination } from '@/types/global';
@@ -132,32 +131,14 @@
   const route = useRoute();
   const { t } = useI18n();
   const [registerModal, { openModal }] = useModal();
- 
+  const platformList = ref<CateItem[]>([]);
+  const accountTypeList = ref<CateItem[]>([]);
   const rowSelection = reactive({
       type: 'checkbox',
       showCheckedAll: true,
       onlyCurrent: false,
     });
 
-
-  const densityList = computed(() => [
-    {
-      name: t('searchTable.size.mini'),
-      value: 'mini',
-    },
-    {
-      name: t('searchTable.size.small'),
-      value: 'small',
-    },
-    {
-      name: t('searchTable.size.medium'),
-      value: 'medium',
-    },
-    {
-      name: t('searchTable.size.large'),
-      value: 'large',
-    },
-  ]);
   //分页
   const basePagination: Pagination = {
     current: 1,
@@ -179,10 +160,10 @@
    //查询字段
    const generateFormModel = () => {
     return {
-      platform: 0,
+      platform: ["不限"],
       fansCnt: '0',
       priceRange: '0',
-      accountType: [0],
+      accountType: ['不限'],
       projectNo: '',
       cooperateTime: 0,
       accountNikeName: "",
@@ -192,9 +173,9 @@
   const formModel = ref(generateFormModel());
   const fetchData = async () => {
     setLoading(true);
+    fetchCateList()
     try {
-      // alert(JSON.stringify(formModel.value));
-      const data= await getSearch({page:pagination.current,pageSize:pagination.pageSize,...formModel.value});
+      const data= await getSearchOwner({page:pagination.current,pageSize:pagination.pageSize,...formModel.value});
       renderData.value = data.items;
       pagination.current = data.page;
       pagination.total = data.total;
@@ -204,6 +185,24 @@
       setLoading(false);
     }
   };
+
+  const fetchCateList = async () => {
+    try {
+      const data= await getCateList({});
+      platformList.value.length = 0
+      accountTypeList.value.length = 0
+      for (let item of data.items) {
+        if (item.cate_type == "platform") {
+          platformList.value.push(item)
+        } else if  (item.cate_type == "account_type") {
+          accountTypeList.value.push(item)
+        }
+      }
+    } catch (err) {
+      // you can report use errorHandler or other
+    }
+  };
+
   //组件挂载完成后执行的函数
   onMounted(()=>{
     })
@@ -218,7 +217,7 @@
   const DOMAIN = window?.globalConfig.Main_url;
   const download = async () => {
     try {
-      const res = await exportData(formModel.value);
+      const res = await exportDataOwner(formModel.value);
       if (res.status == 200) {
         const blob = new Blob([res.data], {type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'})
         const downloadUrl = URL.createObjectURL(blob)
@@ -238,11 +237,22 @@
   };
 
   fetchData();
+
   const handleSelectDensity = (
     val: string | number | Record<string, any> | undefined,
     e: Event
   ) => {
     size.value = val as SizeProps;
+  };
+
+  const handleChange = (values) => {
+    if (values.length > 1) {
+      for (let v of values) {
+        if (v == "不限") {
+          console.log(v)
+        } 
+      }
+    }
   };
 
   watch(
@@ -292,38 +302,6 @@
       Message.clear("top")
     } 
   }
-
-  //状态
-  const platOptions = [
-    {
-      label: "不限",
-      value: 0,
-    },
-    {
-      label: "抖音",
-      value: 1,
-    },
-    {
-      label: "小红书",
-      value: 2,
-    },
-    {
-      label: "快手",
-      value: 3,
-    },
-    {
-      label: "视频号",
-      value: 4,
-    },
-    {
-      label: "微博",
-      value: 5,
-    },
-    {
-      label: "其他",
-      value: 6,
-    },
-  ];
 
   //粉丝数目
   const fansCntOptions = [
@@ -378,7 +356,7 @@
   // 合作时间
   const cooperateOptions = [
   {
-      label: "不限制",
+      label: "不限",
       value: 0,
     },
     {
@@ -396,71 +374,6 @@
     {
       label: "近1年",
       value: 365,
-    },
-  ];
-
-
-  // 合作时间
-  const checkBoxOptions = [
-  {
-      label: "不限",
-      value: 0,
-    },
-    {
-      label: "美容美妆",
-      value: "1",
-    },
-    {
-      label: "母婴育儿",
-      value: "2",
-    },
-    {
-      label: "时尚穿搭",
-      value: 3,
-    },
-    {
-      label: "旅游摄影",
-      value: 4,
-    },
-    {
-      label: "游戏动漫",
-      value: 5,
-    },
-    {
-      label: "娱乐影音",
-      value: 6,
-    },
-    {
-      label: "美食生活",
-      value: 7,
-    },
-    {
-      label: "科技互联网",
-      value: 8,
-    },
-    {
-      label: "健康养生",
-      value: 9,
-    },
-    {
-      label: "情感心理",
-      value: 9,
-    },
-    {
-      label: "财经",
-      value: 10,
-    },
-    {
-      label: "宠物",
-      value: 11,
-    },
-    {
-      label: "运动健身",
-      value: 12,
-    },
-    {
-      label: "家店家具",
-      value: 13,
     },
   ];
 

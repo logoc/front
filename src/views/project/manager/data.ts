@@ -20,7 +20,7 @@ export const columns = computed<TableColumnData[]>(() => [
       title:  '合作时间',
       dataIndex: 'cooperate_time',
       slotName: 'cooperate_time',
-      width: 110,
+      width: 115,
       align:'center'
     },
      {
@@ -40,7 +40,7 @@ export const columns = computed<TableColumnData[]>(() => [
       align:'center'
     },
      {
-      title:  '粉丝数(万)',
+      title:  '粉丝数',
       dataIndex: 'fanscnt',
       slotName: 'fanscnt',
       width: 100,

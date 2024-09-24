@@ -1,41 +1,33 @@
 <template>
   <div class="container" >
-    <Breadcrumb :items="[route.matched[0].meta.locale, route.meta.locale]" />
     <a-card class="general-card onelineCard" style="height: calc(100% - 50px);">
       <a-row style="margin-bottom: 10px">
-        <a-col :span="10" >
-          <a-space>
-            <a-input :style="{width:'220px'}" v-model="formModel.name" placeholder="用户名" allow-clear >
-              <template #prefix>
-                用户:
-              </template>
-            </a-input>
-            <a-select :options="statusOptions" v-model="formModel.status" :style="{width:'200px'}" >
-              <template #prefix>
-                审批状态:
-              </template>
-            </a-select>
-          </a-space>
-        </a-col>
-
         <a-col
-          :span="14"
-           style="text-align: right;"
+          :span="12"
+           style="text-align: left;"
         >
         <a-space>
-          <a-button type="primary" @click="search">
-              <template #icon>
-                <icon-search />
-              </template>
-              查询
-            </a-button>
-            <a-button @click="reset">
-              {{ $t('searchTable.form.reset') }}
-            </a-button>
+          <a-button type="primary"  @click="createRule">
+            <template #icon>
+              <icon-plus />
+            </template>
+            新增
+          </a-button>
+          </a-space>
+        </a-col>
+        <a-col
+          :span="12"
+           style="text-align: right;"
+        >
+          <a-space> 
+            <a-tooltip :content="$t('searchTable.actions.refresh')">
+              <div class="action-icon" @click="search">
+                <icon-refresh size="18"/>
+              </div>
+            </a-tooltip>
           </a-space>
         </a-col>
       </a-row>
-
       <a-table
          row-key="id"
         :loading="loading"
@@ -50,9 +42,6 @@
         @page-change="handlePaageChange" 
         @page-size-change="handlePaageSizeChange" 
       >
-        <template #file_name="{ record }">
-        <a-link :href="record.url" status="success" target="_blank">{{record.file_name}}</a-link>
-        </template>
         <template #name="{ record }">
          {{ record.name }}<span v-if="record.nickname" style="padding-left: 5px;color: var(--color-neutral-4);">{{ record.nickname }}</span>
         </template>
@@ -64,16 +53,14 @@
               :src="record.mimetype.includes('image')?record.url:record.cover_url"
             />
         </template>
-        <template #approve_time="{record,column}">
-          {{dayjs(record[column.dataIndex]*1000).format("YYYY-MM-DD HH:mm")}}
+        <template #createtime="{record,column}">
+          {{dayjs(record[column.dataIndex]*1000).format("YYYY-MM-DD")}}
         </template>
-        <template #approve_status="{ record }">
-          <span v-if="record.approve_status==0" :style="{color:'gray'}">未审批</span>
-          <span v-if="record.approve_status==1" :style="{color:'orangered'}">通过</span>
-          <span v-if="record.approve_status==-1" :style="{color:'black'}">不通过</span>
+        <template #cate_type="{ record }">
+          {{getCateTypeName(record.cate_type)}}
         </template>
         <template #operations="{ record }">
-          <Icon icon="svgfont-shenpi" class="iconbtn" @click="handleGroup(record)" :size="18" color="#0960bd"> </Icon>
+          <Icon icon="svgfont-bianji1" class="iconbtn" @click="handleEdit(record)" :size="18" color="#0960bd"></Icon>
           <a-divider direction="vertical" />
           <a-popconfirm content="您确定要删除吗?" @ok="handleDel(record)">
             <Icon icon="svgfont-icon7" class="iconbtn" :size="18" color="#ed6f6f"></Icon>
@@ -82,7 +69,7 @@
       </a-table>
     </a-card>
     <!--表单-->
-    <CateIndex @register="registerCateIndexModal" @success="handleData"/>
+    <AddForm @register="registerModal" @success="handleData"/>
   </div>
 </template>
 
@@ -90,17 +77,16 @@
   import { computed, ref, reactive, watch, onMounted } from 'vue';
   import useLoading from '@/hooks/loading';
   import type { TableColumnData } from '@arco-design/web-vue/es/table/interface';
+  import type { SelectOptionData } from '@arco-design/web-vue/es/select/interface';
   import cloneDeep from 'lodash/cloneDeep';
-
   import dayjs from 'dayjs';
   //api
-  import { getList} from './api';
+  import { getList,del} from './api';
   //数据
   import { columns} from './data';
   //表单
-  import { useModalInner } from '/@/components/Modal';
-  import CateIndex from './cate/index.vue';
   import { useModal } from '/@/components/Modal';
+  import AddForm from './AddForm.vue';
   import { useI18n } from 'vue-i18n';
   import {Icon} from '@/components/Icon';
   import { Message } from '@arco-design/web-vue';
@@ -108,25 +94,8 @@
   import { useRoute } from 'vue-router'
   const route = useRoute();
   const { t } = useI18n();
-  const [registerCateIndexModal, { openModal:cateModal }] = useModal();
-  const densityList = computed(() => [
-    {
-      name: t('searchTable.size.mini'),
-      value: 'mini',
-    },
-    {
-      name: t('searchTable.size.small'),
-      value: 'small',
-    },
-    {
-      name: t('searchTable.size.medium'),
-      value: 'medium',
-    },
-    {
-      name: t('searchTable.size.large'),
-      value: 'large',
-    },
-  ]);
+  const [registerModal, { openModal }] = useModal();
+ 
   //分页
   const basePagination: Pagination = {
     current: 1,
@@ -148,19 +117,10 @@
    //查询字段
    const generateFormModel = () => {
     return {
-      id: '',
-      name: '',
-      status : '*',
+      cate_type: 'platform',
     };
   };
   const formModel = ref(generateFormModel());
-
-  // const [registerModal, { setModalProps, closeModal }] = useModalInner(async (data) => {
-  //     setModalProps({ confirmLoading: false });
-  //     formModel.value=cloneDeep(data.record)
-  //     fetchData()
-  // });
-
   const fetchData = async () => {
     setLoading(true);
     try {
@@ -180,17 +140,22 @@
   //组件挂载完成后执行的函数
   onMounted(()=>{
     })
-  //查找
-  const search = () => {
+ //查找
+ const search = () => {
     fetchData();
-  };   
+  };
   const reset = () => {
     formModel.value = generateFormModel();
     fetchData();
   };
 
   fetchData();
-
+  const handleSelectDensity = (
+    val: string | number | Record<string, any> | undefined,
+    e: Event
+  ) => {
+    size.value = val as SizeProps;
+  };
 
   watch(
     () => columns.value,
@@ -204,11 +169,17 @@
     { deep: true, immediate: true }
   );
 
-
-    // 查看数据
-  const handleGroup=async(record:any)=>{
-    cateModal(true, {
+  //添加
+  const createRule=()=>{
+    openModal(true, {
       isUpdate: false,
+      record:null
+    });
+  }
+  //编辑数据
+  const handleEdit=async(record:any)=>{
+    openModal(true, {
+      isUpdate: true,
       record:record
     });
   }
@@ -227,25 +198,34 @@
     fetchData();
   }
 
-  //状态
-  const statusOptions = [
-    {
-      label: "全部",
-      value: "*",
-    },
-    {
-      label: "通过",
-      value: "1",
-    },
-    {
-      label: "未通过",
-      value: "-1",
-    },
-    {
-      label: "未审批",
-      value: "0",
-    },
-  ];
+  //删除数据
+  const handleDel=async(record:any)=>{
+    try {
+        Message.loading({content:"删除中",id:"upStatus"})
+       const res = await del({id:record.id});
+       if(res){
+         Message.success({content:"删除成功",id:"upStatus"})
+       }
+       fetchData();
+    }catch (error) {
+      Message.clear("top")
+    } 
+  }
+
+
+  //获取type过滤
+  const getCateTypeName=(val:string)=>{
+        var text=""
+        if(val=="platform"){
+          text="合作平台"
+        }else if(val=="cooperate_type"){
+          text="合作形式"
+        }else if(val=="account_type"){
+          text="账号类型"
+        }
+        return text
+
+  }
 </script>
 
 <script lang="ts">
@@ -305,9 +285,4 @@
         color: rgb(var(--primary-6));
       }
   }
-
-  .custom-checkbox-card-checked {
-    border-color: antiquewhite;
-  }
-
 </style>

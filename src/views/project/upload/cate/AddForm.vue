@@ -1,5 +1,5 @@
-ƒ<template>
-  <BasicModal v-bind="$attrs" @register="registerModal" :loading="loading" helpMessage="查看明细" width="900px" :minHeight="500" :title="getTitle" @ok="handleSubmit">
+<template>
+  <a-modal  v-model:visible="visibleModal" width="900px" title-align="start" :title="getTitle" @ok="handleSubmit">
     <a-form ref="formRef" :model="formData" auto-label-width>
       <a-row :gutter="16">
         <a-col :span="12">
@@ -33,7 +33,7 @@
         </a-col>
         <a-col :span="12">
           <a-form-item field="publish_link" label="发布链接" validate-trigger="input" style="margin-bottom:15px;">
-            <a-input v-model="formData.publish_link" placeholder="请填发布链接" readonly/>
+            <a-input v-model="formData.publish_link" placeholder="请填发布链接"/>
           </a-form-item>
         </a-col>
         <a-col :span="12">
@@ -96,85 +96,93 @@
         </a-col>
       </a-row>
     </a-form>
-  </BasicModal>
+
+  </a-modal>
 </template>
 <script lang="ts">
   import { defineComponent, ref, computed, unref} from 'vue';
-  import { BasicModal, useModalInner } from '/@/components/Modal';
   import { FormInstance } from '@arco-design/web-vue/es/form';
   import useLoading from '@/hooks/loading';
-  import { useI18n } from 'vue-i18n';
   import { cloneDeep } from 'lodash-es';
-  
   //api
   import { update} from '@/api/project/project';
-  import { IconPicker ,Icon} from '@/components/Icon';
   import { Message } from '@arco-design/web-vue';
   export default defineComponent({
-    name: 'AddBook',
-    components: { BasicModal,IconPicker,Icon },
+    name: 'AddForm',
+    components: {  },
     emits: ['success'],
     setup(_, { emit }) {
-      const { t } = useI18n();
+      const visibleModal = ref(false);
       const isUpdate = ref(false);
+      const parntList = ref([]);
       //表单
       const formRef = ref<FormInstance>();
       //表单字段
       const basedata={
-            id:0,
-            platform: '',
-            cooperate_time: '',
-            account_type: '',
-            account_nikename: "",
-            fanscnt: "",
-            publish_link: "",
-            cooperate_type:"",
-            platform_price:"",
-            actual_price:"",//手机
-            discount_note:"",//邮箱
-            tax_rate:"%",//地址
-            department:"",//城市
-            projectno:"",//备注
-            project_name:"",//公司
-            payno:"",//公司
-            supply_name:"",//公司
-            contact:"",//公司
+          id:0,
+          platform: '',
+          cooperate_time: '',
+          account_type: '',
+          account_nikename: "",
+          fanscnt: "",
+          publish_link: "",
+          cooperate_type:"",
+          platform_price:"",
+          actual_price:"",//手机
+          discount_note:"",//邮箱
+          tax_rate:"%",//地址
+          department:"",//城市
+          projectno:"",//备注
+          project_name:"",//公司
+          payno:"",//公司
+          supply_name:"",//公司
+          contact:"",//公司
         }
       const formData = ref(basedata)
-      const [registerModal, { setModalProps, closeModal }] = useModalInner(async (data) => {
-          formRef.value?.resetFields()
-          setModalProps({ confirmLoading: false });
-          isUpdate.value = !!data?.isUpdate;
+      const m_component=ref("")
+      const ShowModal=async(data:any)=>{
+        visibleModal.value=true
+        isUpdate.value = !!data?.isUpdate;
           if (unref(isUpdate)) {
+            m_component.value=data.record.component
             formData.value=cloneDeep(data.record)
           }else{
-            formData.value=basedata
+            formData.value=cloneDeep(basedata)
           }
-      });
-      const getTitle = computed(() => (!unref(isUpdate) ? '新增' : '查看'));
+      }
+      const getTitle = computed(() => (!unref(isUpdate) ? '新增' : '编辑'));
      //点击确认
      const { loading, setLoading } = useLoading();
      const handleSubmit = async () => {
-        closeModal()
-        emit('success');
-        setLoading(false);
-        Message.clear("top")
-      
+      try {
+          const res = await formRef.value?.validate();
+          if (!res) {
+            setLoading(true);
+            Message.loading({content:"更新中",id:"upStatus"})
+            await update(unref(formData));
+            Message.success({content:"更新成功",id:"upStatus"})
+            emit('success');
+            setLoading(false);
+            visibleModal.value=false
+          }
+        } catch (error) {
+          setLoading(false);
+          Message.clear("top")
+        }
       };
-      //上传附件改变
-      const onChange=(fileList:any)=>{
-        console.log("fileList",fileList)
-      }
-
       return { 
-        registerModal, 
+        ShowModal, 
         getTitle, 
         handleSubmit,
         formRef,
         loading,
         formData,
-        t,
-        onChange,
+        parntList,
+        visibleModal,
+        OYoptions:[
+          { label: '否', value: 0 },
+          { label: '是', value: 1 },
+        ],
       };
     },
   });

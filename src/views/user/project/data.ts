@@ -84,6 +84,65 @@ export const columns = computed<TableColumnData[]>(() => [
       align:"center"
     },
     {
+      title: '税率',
+      dataIndex: 'tax_rate',
+      slotName: 'tax_rate',
+      width: 120,
+      align:"center"
+    },
+    {
+      title: '事业部',
+      dataIndex: 'department',
+      slotName: 'department',
+      width: 120,
+      align:"center"
+    },
+    {
+      title: '项目号',
+      dataIndex: 'projectno',
+      slotName: 'projectno',
+      ellipsis: true,
+      tooltip: true,
+      width: 160,
+      align:"center"
+    },    
+    {
+      title: '项目名称',
+      dataIndex: 'project_name',
+      slotName: 'project_name',
+      tooltip: true,
+      ellipsis: true,
+      width: 180,
+      align:"center"
+    },
+    {
+      title: '支付单号',
+      dataIndex: 'payno',
+      slotName: 'payno',
+      ellipsis: true,
+      tooltip: {position: 'left'},
+      width: 160,
+      align:"center"
+    },
+    {
+      title: '供应商名称',
+      dataIndex: 'supply_name',
+      slotName: 'supply_name',
+      ellipsis: true,
+      tooltip: {position: 'left'},
+      width: 160,
+      align:"center"
+    },
+    {
+      title: '联系方式',
+      dataIndex: 'contact',
+      slotName: 'contact',
+      ellipsis: true,
+      tooltip: {position: 'left'},
+      width: 160,
+      align:"center"
+    },
+    {
       title: '操作',
       dataIndex: 'operations',
       slotName: 'operations',

@@ -23,7 +23,7 @@
 
       <a-row style="margin-bottom: 10px">
         <a-col :span="24" >
-          <a-checkbox-group v-model="formModel.accountType" >
+          <a-checkbox-group v-model="formModel.accountType" @change="handleChange">
             <a-tag size="large">账号类型:</a-tag>
             <template v-for="item in accountTypeList" :key="item" >
               <a-checkbox :value="item.cate">
@@ -33,14 +33,17 @@
               </a-checkbox>
             </template>
           </a-checkbox-group>
-        </a-col>
-      </a-row>
+      </a-col>
+    </a-row>
 
-      <a-row style="margin-bottom: 10px">
+    <a-row style="margin-bottom: 10px">
       <a-col :span="14">
         <a-space>
           <a-input :style="{width:'300px'}" v-model="formModel.accountNikeName" placeholder="账号昵称" allow-clear >
             <template #prefix>账号昵称: </template>
+          </a-input>
+          <a-input :style="{width:'250px'}" v-model="formModel.projectNo" placeholder="项目号" allow-clear >
+            <template #prefix>项目号: </template>
           </a-input>
           <a-select :style="{width:'200px'}" :options="cooperateOptions" v-model="formModel.cooperateTime" placeholder="合作时间" >
             <template #prefix>合作时间: </template>
@@ -64,8 +67,8 @@
               <icon-download />
             </template>导出
           </a-button>
-        </a-space>
-      </a-col>
+          </a-space>
+        </a-col>
       </a-row>
 
       <a-table
@@ -90,8 +93,15 @@
         <template #publish_link="{ record }">
           <a-link :href="record.publish_link" status="success" target="_blank">{{record.publish_link}}</a-link>
         </template>
+        <template #name="{ record }">
+         {{ record.name }}<span v-if="record.nickname" style="padding-left: 5px;color: var(--color-neutral-4);">{{ record.nickname }}</span>
+        </template>
         <template #operations="{ record }">
-          <Icon icon="svgfont-chakan" class="iconbtn" @click="handleEdit(record)" :size="18" color="#0960bd"></Icon>
+          <Icon icon="svgfont-bianji1" class="iconbtn" @click="handleEdit(record)" :size="18" color="#0960bd"></Icon>
+          <a-divider direction="vertical" />
+          <a-popconfirm content="您确定要删除吗?" @ok="handleDel(record)">
+            <Icon icon="svgfont-icon7" class="iconbtn" :size="18" color="#ed6f6f"></Icon>
+          </a-popconfirm>
         </template>
       </a-table>
     </a-card>
@@ -104,11 +114,10 @@
   import { computed, ref, reactive, watch, onMounted } from 'vue';
   import useLoading from '@/hooks/loading';
   import type { TableColumnData } from '@arco-design/web-vue/es/table/interface';
-  import type { SelectOptionData } from '@arco-design/web-vue/es/select/interface';
   import cloneDeep from 'lodash/cloneDeep';
   import dayjs from 'dayjs';
   //api
-  import { getSearch, exportData,CateItem, getCateList} from '@/api/project/project';
+  import { getSearch, exportData, del, CateItem, getCateList} from '@/api/project/project';
   //数据
   import { columns } from './data';
   //表单
@@ -120,12 +129,12 @@
   import { Message } from '@arco-design/web-vue';
   import { Pagination } from '@/types/global';
   import { useRoute } from 'vue-router'
+import { any } from 'vue-types';
   const route = useRoute();
   const { t } = useI18n();
   const [registerModal, { openModal }] = useModal();
   const platformList = ref<CateItem[]>([]);
   const accountTypeList = ref<CateItem[]>([]);
-
   const rowSelection = reactive({
       type: 'checkbox',
       showCheckedAll: true,
@@ -168,7 +177,6 @@
     setLoading(true);
     fetchCateList()
     try {
-      // alert(JSON.stringify(formModel.value));
       const data= await getSearch({page:pagination.current,pageSize:pagination.pageSize,...formModel.value});
       renderData.value = data.items;
       pagination.current = data.page;
@@ -196,6 +204,7 @@
       // you can report use errorHandler or other
     }
   };
+
   //组件挂载完成后执行的函数
   onMounted(()=>{
     })
@@ -230,11 +239,22 @@
   };
 
   fetchData();
+
   const handleSelectDensity = (
     val: string | number | Record<string, any> | undefined,
     e: Event
   ) => {
     size.value = val as SizeProps;
+  };
+
+  const handleChange = (values) => {
+    if (values.length > 1) {
+      for (let v of values) {
+        if (v == "不限") {
+          console.log(v)
+        } 
+      }
+    }
   };
 
   watch(
@@ -271,37 +291,19 @@
     fetchData();
   }
 
-  //状态
-  const platOptions = [
-    {
-      label: "不限",
-      value: 0,
-    },
-    {
-      label: "抖音",
-      value: 1,
-    },
-    {
-      label: "小红书",
-      value: 2,
-    },
-    {
-      label: "快手",
-      value: 3,
-    },
-    {
-      label: "视频号",
-      value: 4,
-    },
-    {
-      label: "微博",
-      value: 5,
-    },
-    {
-      label: "其他",
-      value: 6,
-    },
-  ];
+  //删除数据
+  const handleDel=async(record:any)=>{
+    try {
+        Message.loading({content:"删除中",id:"upStatus"})
+       const res= await del({ids:[record.id]});
+       if(res){
+        fetchData();
+         Message.success({content:"删除成功",id:"upStatus"})
+       }
+    }catch (error) {
+      Message.clear("top")
+    } 
+  }
 
   //粉丝数目
   const fansCntOptions = [

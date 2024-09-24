@@ -46,14 +46,23 @@
           <template #publish_link="{ record }">
             <a-link :href="record.publish_link" status="success" target="_blank">{{record.publish_link}}</a-link>
           </template>
+          <template #operations="{ record }">
+            <Icon icon="svgfont-bianji1" class="iconbtn" @click="handleEdit(record)" :size="18" color="#0960bd"></Icon>
+            <a-divider direction="vertical" />
+            <a-popconfirm content="您确定要删除吗?" @ok="handleDel(record)">
+              <Icon icon="svgfont-icon7" class="iconbtn" :size="18" color="#ed6f6f"></Icon>
+            </a-popconfirm>
+        </template>
         </a-table>
+      <!--表单-->
       </div>
     </div>
+    <AddForm ref="addFormRef" @success="search"/>
   </BasicModal>
 </template>
 <script lang="ts">
   import { defineComponent, ref, computed, unref,reactive} from 'vue';
-  import { BasicModal, useModalInner } from '/@/components/Modal';
+  import { BasicModal, useModalInner,useModal } from '/@/components/Modal';
   import useLoading from '@/hooks/loading';
   import { Pagination } from '@/types/global';
 
@@ -61,12 +70,16 @@
   //数据
   import { columns} from './data';
   import dayjs from 'dayjs';
+
+  import AddForm from './AddForm.vue';
+
+  import { Message } from '@arco-design/web-vue';
   //api
   import { getList} from './api';
   import { IconPicker ,Icon} from '@/components/Icon';
   export default defineComponent({
     name: 'cateindex',
-    components: { BasicModal,IconPicker,Icon },
+    components: { BasicModal,IconPicker,Icon,AddForm },
     emits: ['success'],
     setup(_, { emit }) {
       const isUpdate = ref(false);
@@ -145,6 +158,32 @@
         fetchData();
       }
 
+        //删除数据
+        const handleDel=async(record:any)=>{
+          try {
+              Message.loading({content:"删除中",id:"upStatus"})
+            const res= await del({ids:[record.id]});
+            if(res){
+              fetchData();
+              Message.success({content:"删除成功",id:"upStatus"})
+            }
+          }catch (error) {
+            Message.clear("top")
+          } 
+        }
+   
+      //编辑数据
+      const addFormRef=ref()
+      const handleEdit=async(record:any)=>{
+        addFormRef.value.ShowModal({
+          isUpdate: true,
+          record:record
+        })
+      }
+      //更新数据
+      const handleData=async()=>{
+        fetchData();
+      }
        //查找
       const search = () => {
         fetchData();
@@ -160,6 +199,7 @@
         onHeightChange,windHeight,
         pagination,handlePaageChange,handlePaageSizeChange,
         renderData,
+        handleEdit, handleData,addFormRef,
         search,
       };
     },

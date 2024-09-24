@@ -1,4 +1,4 @@
-##  GoFly单服务版 -业务前端代码
+##  单服务版 -业务前端代码
  你开发的业务代码在这里编写，这里的超级管理账号admin端“业务端管理”里的账号添加和编辑。
 ### 快速运行项目
 建议使用 yarn 
@@ -21,8 +21,6 @@ npm run build 或者 yarn build
 （1）、config/vite.config.prod.ts中的mergeConfig下的：base: process.env.NODE_ENV === 'production' ? '/webbusiness/' : ''。
 （2）、src/router/index.ts中的createRouter下的：history: createWebHashHistory(process.env.NODE_ENV === 'production' ? '/webbusiness/' : '')。
 
-### 开发说明
-您在开发时候请您参考文档说明 https://doc.goflys.cn/docview?id=25
  
 
  

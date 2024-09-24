@@ -3,7 +3,7 @@
     <Breadcrumb :items="[route.matched[0].meta.locale, route.meta.locale]" />
     <a-card class="general-card onelineCard" style="height: calc(100% - 50px);">
       <a-row style="margin-bottom: 10px">
-        <a-col :span="12">
+        <a-col :span="8">
           <a-space>
             <a-upload
                 :show-file-list="false"
@@ -19,7 +19,7 @@
             </template>
             </a-upload>
 
-            <a-button  @click="handleDownload">
+            <a-button  @click="handleDownloadTemplate">
               <template #icon>
                 <icon-download />
               </template>
@@ -29,7 +29,7 @@
         </a-col>
 
         <a-col
-          :span="12"
+          :span="16"
            style="text-align: right;"
         >
         <a-space>
@@ -48,10 +48,10 @@
                 <icon-search />
               </template>
               查询
-          </a-button>
-          <a-tooltip :content="$t('searchTable.actions.refresh')">
-            <div class="action-icon" @click="search"><icon-refresh size="18"/></div>
-          </a-tooltip>
+            </a-button>
+            <a-button @click="reset">
+              {{ $t('searchTable.form.reset') }}
+            </a-button> 
           </a-space>
         </a-col>
       </a-row>
@@ -70,7 +70,7 @@
         @page-size-change="handlePaageSizeChange" 
       >
         <template #file_name="{ record }">
-        <a-link :href="record.url" status="success" target="_blank">{{record.file_name}}</a-link>
+          <a-link :href="record.url" status="success" target="_blank">{{record.file_name}}</a-link>
         </template>
         <template #approve_status="{ record }">
           <span v-if="record.approve_status==0" :style="{color:'gray'}">未审批</span>
@@ -89,7 +89,6 @@
     </a-card>
     <!--表单-->
     <CateIndex @register="registerCateIndexModal" @success="handleData"/>
-    <EditForm @register="registerModal" @success="handleData"/>
   </div>
 </template>
 
@@ -111,11 +110,9 @@
   import { Message } from '@arco-design/web-vue';
   import type { RequestOption} from '@arco-design/web-vue/es/upload/interfaces';
   import { Pagination } from '@/types/global';
-  import { useRoute } from 'vue-router'
-  import Modal from '@/components/Modal/src/components/Modal';
+  import { useRoute } from 'vue-router';
   const route = useRoute();
   const { t } = useI18n();
-  const [registerModal, { openModal }] = useModal();
   const [registerCateIndexModal, { openModal:cateModal }] = useModal();
   //上传文件
   const customRequest = (options: RequestOption) => {
@@ -217,18 +214,25 @@
   const search = () => {
     fetchData();
   };
+
   const reset = () => {
     formModel.value = generateFormModel();
     fetchData();
   };
 
  const DOMAIN = window?.globalConfig.Main_url;
- const handleDownload = () => {
+ const handleDownloadTemplate = () => {
   let a = document.createElement('a')
   a.href = `${DOMAIN}resource/staticfile/template.xlsx`
   a.click()
  }
 
+
+  const handleDownload = (url:any) => {
+    let a = document.createElement('a')
+    a.href = `${DOMAIN}url`
+    a.click()
+  }
   fetchData();
   watch(
     () => columns.value,
@@ -249,13 +253,7 @@
       record:record
     });
   }
-  //编辑数据
-  const handleEdit=async(record:any)=>{
-    openModal(true, {
-      isUpdate: true,
-      record:record
-    });
-  }
+
   //更新数据
   const handleData=async()=>{
     fetchData();

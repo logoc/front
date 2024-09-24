@@ -3,19 +3,27 @@ import { UploadFileParams } from '/#/axios';
 import { join } from 'lodash';
 import axios from 'axios';
 enum Api {
-    getSelect = '/project/project/get_select',
     getSearch = '/project/project/get_search',
+    getSearchOwner = '/project/project/get_search_owner',
     getContent= '/project/project/get_content',
     save = '/project/project/save',
     update = '/project/project/update',
     upStatus = '/project/project/upStatus',
     exportData = '/project/project/get_export',
+    exportDataOwner = '/project/project/get_export_owner',
     del = '/project/project/del',
+    getExportLog = '/project/project/get_exportlog',
+    getCateList = '/project/upconfig/get_list_nopage',
+    
 }
 
 //列表数据
-export function getSelect(params: object) {
-  return defHttp.get({ url: Api.getSelect, params:params }, { errorMessageMode: 'none' });
+export function getCateList(params: object) {
+  return defHttp.get({ url: Api.getCateList, params:params }, { errorMessageMode: 'none' });
+}
+
+export function getSearchOwner(params: object) {
+  return defHttp.get({ url: Api.getSearchOwner, params:params }, { errorMessageMode: 'none' });
 }
 export function getSearch(params: object) {
   return defHttp.get({ url: Api.getSearch, params:params }, { errorMessageMode: 'none' });
@@ -47,6 +55,15 @@ export function exportData(params: object) {
   return defHttp.get({ url: Api.exportData, params:params, responseType:'arraybuffer' }, { isReturnNativeResponse: true });
 }
 
+//下载内容
+export function exportDataOwner(params: object) {
+  return defHttp.get({ url: Api.exportDataOwner, params:params, responseType:'arraybuffer' }, { isReturnNativeResponse: true });
+}
+export function getExportLog(params: object) {
+  return defHttp.get({ url: Api.getExportLog, params:params }, { errorMessageMode: 'message' });
+}
+
+
 /**数据类型 */
 export interface DataItem {
     id:number,
@@ -70,4 +87,10 @@ export function userUploadApi(
   onUploadProgress?: (progressEvent: any) => void
 ) {
   return defHttp.uploadFile<UploadItem>({ url:`${DOMAIN}/matter/picture/uploadFile`,onUploadProgress},params);
+}
+
+export interface CateItem {
+  id:number,
+  cate_type:string,
+  cate: string;
 }

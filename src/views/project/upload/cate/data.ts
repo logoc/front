@@ -142,4 +142,13 @@ export const columns = computed<TableColumnData[]>(() => [
       width: 160,
       align:"center"
     },
+    {
+      title: '操作',
+      dataIndex: 'operations',
+      slotName: 'operations',
+      width: 100,
+      fixed: 'right',
+      align:"center"
+    
+    },
   ]);

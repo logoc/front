@@ -1,5 +1,5 @@
 ƒ<template>
-  <BasicModal v-bind="$attrs" @register="registerModal" :loading="loading" helpMessage="查看明细" width="900px" :minHeight="500" :title="getTitle" @ok="handleSubmit">
+  <BasicModal v-bind="$attrs" @register="registerModal" :loading="loading" helpMessage="编辑和修改菜单" width="900px" :minHeight="500" :title="getTitle" @ok="handleSubmit">
     <a-form ref="formRef" :model="formData" auto-label-width>
       <a-row :gutter="16">
         <a-col :span="12">
@@ -33,7 +33,7 @@
         </a-col>
         <a-col :span="12">
           <a-form-item field="publish_link" label="发布链接" validate-trigger="input" style="margin-bottom:15px;">
-            <a-input v-model="formData.publish_link" placeholder="请填发布链接" readonly/>
+            <a-input v-model="formData.publish_link" placeholder="请填发布链接"/>
           </a-form-item>
         </a-col>
         <a-col :span="12">
@@ -151,15 +151,25 @@
             formData.value=basedata
           }
       });
-      const getTitle = computed(() => (!unref(isUpdate) ? '新增' : '查看'));
+      const getTitle = computed(() => (!unref(isUpdate) ? '新增项目' : '编辑项目'));
      //点击确认
      const { loading, setLoading } = useLoading();
      const handleSubmit = async () => {
-        closeModal()
-        emit('success');
-        setLoading(false);
-        Message.clear("top")
-      
+      try {
+          const res = await formRef.value?.validate();
+          if (!res) {
+            setLoading(true);
+            Message.loading({content:"更新中",id:"upStatus"})
+            await update(unref(formData));
+            Message.success({content:"更新成功",id:"upStatus"})
+            closeModal()
+            emit('success');
+            setLoading(false);
+          }
+        } catch (error) {
+          setLoading(false);
+          Message.clear("top")
+        }
       };
       //上传附件改变
       const onChange=(fileList:any)=>{
@@ -174,6 +184,10 @@
         loading,
         formData,
         t,
+        OYoptions:[
+          { label: '否', value: 0 },
+          { label: '是', value: 1 },
+        ],
         onChange,
       };
     },
