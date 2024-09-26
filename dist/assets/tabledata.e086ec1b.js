@@ -1,0 +1,1 @@
+import{n as t}from"./index.a2bf8911.js";function r(e){return t.get({url:"/datacenter/tabledata/get_list",params:e},{errorMessageMode:"none"})}function s(e){return t.post({url:"/datacenter/tabledata/save",params:e},{errorMessageMode:"message"})}function n(e){return t.delete({url:"/datacenter/tabledata/del",params:e},{errorMessageMode:"message"})}export{n as d,r as g,s};
