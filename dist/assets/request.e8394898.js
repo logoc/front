@@ -1,1 +1,0 @@
-import{e as u}from"./arco.b02d9b55.js";import{u as i}from"./loading.7f7bf96d.js";function m(o,s=[],n=!0){const{loading:t,setLoading:r}=i(n),e=u(s);return o().then(a=>{e.value=a}).finally(()=>{r(!1)}),{loading:t,response:e}}export{m as u};
