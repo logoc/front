@@ -50,6 +50,14 @@
         <template #createtime="{record,column}">
           {{dayjs(record[column.dataIndex]*1000).format("YYYY-MM-DD HH:mm:ss")}}
         </template>
+
+        <template #file_path="{ record }">
+          <a-button type="text" @click="handleDownloadFile(record)">
+            <template #icon>
+              <icon-download />
+            </template>
+          </a-button> 
+        </template>
       </a-table>
     </a-card>
     <!--表单-->
@@ -61,17 +69,16 @@
   import useLoading from '@/hooks/loading';
   import type { TableColumnData } from '@arco-design/web-vue/es/table/interface';
   import type { SelectOptionData } from '@arco-design/web-vue/es/select/interface';
+  import { Message } from '@arco-design/web-vue';
   import cloneDeep from 'lodash/cloneDeep';
   import dayjs from 'dayjs';
   //api
-  import { getExportLog } from '@/api/project/project';
+  import { getExportLog, getResourceExcelFile } from '@/api/project/project';
   //数据
   import { columns} from './data';
   //表单
 
   import { useI18n } from 'vue-i18n';
-  import {Icon} from '@/components/Icon';
-  import { Message } from '@arco-design/web-vue';
   import { Pagination } from '@/types/global';
   import { useRoute } from 'vue-router'
   const route = useRoute();
@@ -130,6 +137,30 @@
     fetchData();
   };
 
+  const handleDownloadFile = async(record:any) => {
+    try {
+      const upTime = dayjs(record.create_time*1000).format("YYYY-MM-DD")
+      const res = await getResourceExcelFile(record);
+      if (res.status == 200) {
+        if (res.data.byteLength == 68) {
+          Message.error({content:"下载失败,文件不存在!", id:"upStatus"})
+          return
+        }
+        const blob = new Blob([res.data], {type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'})
+        const downloadUrl = URL.createObjectURL(blob)
+        const link = document.createElement('a')
+        link.href = downloadUrl
+        link.download = upTime + "_" + record.file_name
+        link.click()
+      } else {
+        Message.error({content:"下载失败!", id:"upStatus"})
+      }
+    } catch(error) {
+      Message.error({content:"下载异常，请求失败,",id:"upStatus"})
+    }
+    // alert(JSON.stringify(formModel.value));
+  };
+
   fetchData();
 
   watch(
@@ -154,77 +185,7 @@
     pagination.pageSize=pageSize
     fetchData();
   }
-  //更新状态
-  const handleStatus=async(record:any)=>{
-    try {
-        Message.loading({content:"更新状态中",id:"upStatus"})
-       const res= await upStatus({id:record.id,status:record.status});
-       if(res){
-         Message.success({content:"更新状态成功",id:"upStatus"})
-       }
-    }catch (error) {
-      Message.clear("top")
-    } 
-  }
-  //删除数据
-  const handleDel=async(record:any)=>{
-    try {
-        Message.loading({content:"删除中",id:"upStatus"})
-       const res= await del({ids:[record.id]});
-       if(res){
-        fetchData();
-         Message.success({content:"删除成功",id:"upStatus"})
-       }
-    }catch (error) {
-      Message.clear("top")
-    } 
-}
-  //状态
-  const statusOptions = computed<SelectOptionData[]>(() => [
-    {
-      label: "全部",
-      value: "",
-    },
-    {
-      label: "正常",
-      value: 0,
-    },
-    {
-      label: "隐藏",
-      value: 1,
-    },
-  ]);
-  //存储单位换算
-  const suffix = ['B', 'KB', 'MB', 'GB', 'TB'];
-  const filesizeFont=(size:any)=>{
-    const base = Math.floor(Math.log2(size) / 10);
-    const index = clamp(base, 0, 4);
-    return (size / 2 ** (10 * index)).toFixed(2) + suffix[index];
-  }
-  function clamp(v:any, min:any, max:any) {
-    if (v < min) return min;
-    if (v > max) return max;
-    return v;
-  }
-  //获取type过滤
-  const getTypeFont=(val:number,type:string)=>{
-            var text="",color="";
-            if(val==0){
-              text="素材图"
-              color="cyan"
-            }else if(val==1){
-              text="插图"
-              color="blue"
-            }else if(val==2){
-              text="公共"
-              color="arcoblue"
-            }
-            if(type=="color"){
-              return color
-            }else{
-              return text
-            }
-        }
+
 </script>
 
 <script lang="ts">

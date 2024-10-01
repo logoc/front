@@ -84,21 +84,22 @@
       () => {
         renderData.value = [
           {
+            label: 'userSetting.label.accountId',
+            value:  props.formData.username,
+          },
+          {
             label: 'userSetting.label.name',
             value: userStore.name,
           },
           {
             label: 'userSetting.label.rolename',
-            value:  userStore.rolename,
+            value:  props.formData.rolename,
           },       
           {
             label: 'userSetting.label.certification',
             value: 1,
           },
-          {
-            label: 'userSetting.label.accountId',
-            value:  props.formData.id,
-          },
+         
           {
             label: 'userSetting.label.phone',
             value: props.formData.mobile,

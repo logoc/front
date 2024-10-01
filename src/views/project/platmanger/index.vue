@@ -20,11 +20,11 @@
           <div class="tablebox">
             <a-table  :data="nenudata" row-key="id" @row-click="handleClickMenu" :selected-keys="selectedKeys" :scrollbar="true" :pagination="false" :bordered="{wrapper: true, cell: true}" style="margin-top: 10px">
               <template #columns>
-                    <a-table-column title="" :width="50" data-index="id"></a-table-column>
-                    <a-table-column  title="平台名称" data-index="title">
+                    <a-table-column title="" :width="50" data-index="order_id"></a-table-column>
+                    <a-table-column  title="平台名称" data-index="plat_name">
                       <template #cell="{ record }">
                          <div class="titlebox">
-                          <div class="text">{{ record.title }}</div>
+                          <div class="text">{{ record.plat_name }}</div>
                           <div class="icon"><icon-right /></div>
                          </div>
                       </template>
@@ -37,9 +37,7 @@
         <a-row style="margin-bottom: 10px;padding:0px 10px;">
           <a-col :span="16" >
             <a-space>
-              <a-input :style="{width:'160px'}"  v-model="formModel.title" placeholder="名称" allow-clear />
-              <a-range-picker v-model="formModel.createdTime" :style="{width:'200px'}" />
-              <a-select v-model="formModel.status"  :options="statusOptions" placeholder="状态" :style="{width:'120px'}" />
+              <a-input :style="{width:'160px'}"  v-model="formModel.account_type" placeholder="账号类型" allow-clear />
               <a-button type="primary" @click="search">
                 <template #icon>
                   <icon-search />
@@ -56,7 +54,7 @@
             style="text-align: right;"
           >
           <a-space>
-            <a-button type="primary" @click="createRule">
+            <a-button type="primary" @click="createAccount">
               <template #icon>
                 <icon-plus />
               </template>
@@ -67,21 +65,6 @@
                 ><icon-refresh size="18"
               /></div>
             </a-tooltip>
-            <a-dropdown @select="handleSelectDensity">
-              <a-tooltip :content="$t('searchTable.actions.density')">
-                <div class="action-icon"><icon-line-height size="18" /></div>
-              </a-tooltip>
-              <template #content>
-                <a-doption
-                  v-for="item in densityList"
-                  :key="item.value"
-                  :value="item.value"
-                  :class="{ active: item.value === size }"
-                >
-                  <span>{{ item.name }}</span>
-                </a-doption>
-              </template>
-            </a-dropdown>
             </a-space>
           </a-col>
         </a-row>
@@ -98,28 +81,8 @@
           @page-change="handlePaageChange" 
           @page-size-change="handlePaageSizeChange" 
         >
-          <template #name="{ record }">
-          {{ record.name }}<span v-if="record.nickname" style="padding-left: 5px;color: var(--color-neutral-4);">{{ record.nickname }}</span>
-          </template>
-          <template #image="{ record }">
-              <img
-                alt="封面"
-                style="height: 50px;border-radius: 5px;"
-                :src="record.image"
-              />
-          </template>
           <template #createtime="{ record }">
             {{dayjs(record.createtime*1000).format("YYYY-MM-DD")}}
-          </template>
-          <template #status="{ record }">
-            <a-switch type="round" v-model="record.status" :checked-value="0" :unchecked-value="1" @change="handleStatus(record)">
-                <template #checked>
-                  开
-                </template>
-                <template #unchecked>
-                  关
-                </template>
-              </a-switch>
           </template>
           <template #operations="{ record }">
             <Icon icon="svgfont-bianji1" class="iconbtn" @click="handleEdit(record)" :size="18" color="#0960bd"></Icon>
@@ -142,10 +105,9 @@
   import { computed, ref, reactive, watch, onMounted,nextTick } from 'vue';
   import useLoading from '@/hooks/loading';
   //api
-  import { getList,upStatus,del} from '@/api/datacenter/dictionary';
-  import { getmenuList,delMenuList, menuItem} from '@/api/datacenter/tabledata';
+  import { getList,del} from './api/account_api';
+  import { getPlatList,delPlat, menuItem} from "./api/plat_api"
   import type { TableColumnData } from '@arco-design/web-vue/es/table/interface';
-  import type { SelectOptionData } from '@arco-design/web-vue/es/select/interface';
   import cloneDeep from 'lodash/cloneDeep';
   import dayjs from 'dayjs';
   //数据
@@ -166,24 +128,6 @@
   const [registerModal, { openModal }] = useModal();
   const [registerAddMenuModal, { openModal:openAddMenuModal }] = useModal();
  
-  const densityList = computed(() => [
-    {
-      name: t('searchTable.size.mini'),
-      value: 'mini',
-    },
-    {
-      name: t('searchTable.size.small'),
-      value: 'small',
-    },
-    {
-      name: t('searchTable.size.medium'),
-      value: 'medium',
-    },
-    {
-      name: t('searchTable.size.large'),
-      value: 'large',
-    },
-  ]);
   //分页
   const basePagination: Pagination = {
     current: 1,
@@ -206,19 +150,19 @@
    //查询字段
    const generateFormModel = () => {
     return {
-      trade_no: '',
-      title: '',
+      id: '',
+      account_type: '',
       name: '',
       createdTime: [],
       status: '',
     };
   };
-  const handleTablename=ref("")
+  const handlePlatName = ref("")
   const formModel = ref(generateFormModel());
   const fetchData = async () => {
     setLoading(true);
     try {
-      const data= await getList({page:pagination.current,pageSize:pagination.pageSize,...formModel.value,tablename:handleTablename.value});
+      const data= await getList({page:pagination.current,pageSize:pagination.pageSize,...formModel.value,plat_id:selectedKeys.value[0]});
       renderData.value = data.items;
       pagination.current = data.page;
       pagination.total = data.total;
@@ -230,11 +174,11 @@
   //获取左边数据
   const Menuitem=ref<menuItem>()
   const getmenudata=async()=>{
-    nenudata.value = await getmenuList({})
+    nenudata.value = await getPlatList({})
     if(nenudata.value&&nenudata.value.length>0){
         selectedKeys.value=[nenudata.value[0].id]
         Menuitem.value=nenudata.value[0]
-        handleTablename.value=nenudata.value[0].tablename
+        handlePlatName.value=nenudata.value[0].plat_name
          nextTick(()=>{
           fetchData();
          })
@@ -251,17 +195,15 @@
     pagination.current =1
     setLoading(true);
     selectedKeys.value=[TableData.id]
-    handleTablename.value=TableData.tablename
+    handlePlatName.value=TableData.plat_name
     Menuitem.value=TableData
     fetchData();
   }
   //添加菜单数据
   const AddMenuData=(type:number)=>{
-    console.log(Menuitem.value?.data_from)
+    console.log(Menuitem.value?.plat_name)
     if(type==2&&!Menuitem.value){
       Message.error("未选择编辑数据")
-    }else if(type==2&&(Menuitem.value?.data_from=="common"&&Menuitem.value?.businessID!=userInfo.$state.userId)){
-      Message.error("您没有编辑权限，只能编辑自己添加数据")
     }else{
       openAddMenuModal(true, {
         isUpdate: type==2?true:false,
@@ -273,8 +215,6 @@
   const delMenuData=()=>{
     if(!selectedKeys.value||selectedKeys.value.length==0){
       Message.error("未选择删除数据")
-    }else if(Menuitem.value?.data_from=="common"||Menuitem.value?.businessID!=userInfo.$state.userId){
-      Message.error("数据不可编辑")
     }else{
        Modal.warning({
         title: '您确定要删除内容吗？',
@@ -285,7 +225,7 @@
         hideCancel:false,
         onOk:(async()=>{
           Message.loading({content:"删除中",id:"upStatus",duration:0})
-          await delMenuList({ids:selectedKeys.value})
+          await delPlat({ids:selectedKeys.value})
           nextTick(()=>{
             Message.success({content:"删除成功",id:"upStatus",duration:200})
             getmenudata();
@@ -307,12 +247,6 @@
     fetchData();
   };
 
-  const handleSelectDensity = (
-    val: string | number | Record<string, any> | undefined,
-    e: Event
-  ) => {
-    size.value = val as SizeProps;
-  };
   watch(
     () => columns.value,
     (val) => {
@@ -324,15 +258,15 @@
     },
     { deep: true, immediate: true }
   );
-  //添加
-  const createRule=()=>{
+  //添加账户类型
+  const createAccount=()=>{
     if(!selectedKeys.value||selectedKeys.value.length==0){
       Message.error("未选择字典数据")
     }else{
       openModal(true, {
         isUpdate: false,
-        tablename:handleTablename.value,
-        table_id:selectedKeys.value[0],
+        platname:handlePlatName.value,
+        plat_id:selectedKeys.value[0],
         record:null
       });
     }
@@ -341,8 +275,8 @@
   const handleEdit=async(record:any)=>{
     openModal(true, {
       isUpdate: true,
-      tablename:handleTablename.value,
-      table_id:selectedKeys.value[0],
+      platname:handlePlatName.value,
+      plat_id:selectedKeys.value[0],
       record:record
     });
   }
@@ -360,23 +294,12 @@
     pagination.pageSize=pageSize
     fetchData();
   }
-  //更新状态
-  const handleStatus=async(record:any)=>{
-    try {
-        Message.loading({content:"更新状态中",id:"upStatus"})
-       const res= await upStatus({id:record.id,status:record.status, tablename:handleTablename.value});
-       if(res){
-         Message.success({content:"更新状态成功",id:"upStatus"})
-       }
-    }catch (error) {
-      Message.clear("top")
-    } 
-  }
+
   //删除数据
   const handleDel=async(record:any)=>{
     try {
         Message.loading({content:"删除中",id:"upStatus"})
-       const res= await del({ids:[record.id], tablename:handleTablename.value});
+       const res= await del({ids:[record.id], plat_id:selectedKeys.value[0]});
        if(res){
         fetchData();
          Message.success({content:"删除成功",id:"upStatus"})
@@ -385,21 +308,6 @@
       Message.clear("top")
     } 
 }
-  //状态
-  const statusOptions = computed<SelectOptionData[]>(() => [
-    {
-      label: "全部",
-      value: "",
-    },
-    {
-      label: "正常",
-      value: 0,
-    },
-    {
-      label: "隐藏",
-      value: 1,
-    },
-  ]);
 </script>
 
 <script lang="ts">

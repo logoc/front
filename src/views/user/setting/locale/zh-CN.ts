@@ -40,6 +40,8 @@ export default {
 
   'userSetting.basicInfo.form.label.name': '姓名',
   'userSetting.form.error.name.required': '请输入姓名',
+  'userSetting.basicInfo.placeholder.name': '请输入您的姓名',
+
   'userSetting.basicInfo.form.label.countryRegion': '国家/地区',
   'userSetting.basicInfo.placeholder.countryRegion': '请选择',
   'userSetting.form.error.countryRegion.required': '请选择国家/地区',

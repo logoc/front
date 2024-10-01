@@ -11,12 +11,12 @@ window.globalConfig = {
     Upinfile_url_dev:`${domain}/business`,//业务专用上传附件-开发环境
 	AppTitle:"自媒体管理后台",
     AppVersion:"1.1.0",
-    Company:"demo",
+    Company:"公司名称",
     Address:"中国·北京",
-    Team:"demo技术团队",
+    Team:"技术团队",
     loginTitle:"登录自媒体管理后台",
-    loginSubTitle:"管理账号、业务、数据统计、触达事件等",
-    Copyright:"demo团队提供技术支持",
+    loginSubTitle:"管理账号、业务、数据统计等",
+    Copyright:"团队提供技术支持",
     MaxSizeImage:5,//最大上传图片大小,单位M
 	MaxSizeVideo:150,//最大上传视频大小,单位M
 };

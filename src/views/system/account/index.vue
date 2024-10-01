@@ -5,9 +5,7 @@
       <a-row style="margin-bottom: 10px">
         <a-col :span="16">
           <a-space>
-            <a-input :style="{width:'220px'}"  v-model="formModel.name" placeholder="标题" allow-clear />
-            <a-range-picker v-model="formModel.createdTime" :style="{width:'200px'}" />
-            <a-select v-model="formModel.status"  :options="statusOptions" placeholder="状态" :style="{width:'120px'}" />
+            <a-input :style="{width:'220px'}"  v-model="formModel.username" placeholder="账号" allow-clear />
             <a-button type="primary" @click="search">
               <template #icon>
                 <icon-search />
@@ -28,28 +26,14 @@
             <template #icon>
               <icon-plus />
             </template>
-            {{ $t('searchTable.operation.create') }}
+            {{ $t('menu.system.new') }}
           </a-button>
           <a-tooltip :content="$t('searchTable.actions.refresh')">
             <div class="action-icon" @click="search"
               ><icon-refresh size="18"
             /></div>
           </a-tooltip>
-          <a-dropdown @select="handleSelectDensity">
-            <a-tooltip :content="$t('searchTable.actions.density')">
-              <div class="action-icon"><icon-line-height size="18" /></div>
-            </a-tooltip>
-            <template #content>
-              <a-doption
-                v-for="item in densityList"
-                :key="item.value"
-                :value="item.value"
-                :class="{ active: item.value === size }"
-              >
-                <span>{{ item.name }}</span>
-              </a-doption>
-            </template>
-          </a-dropdown>
+
           </a-space>
         </a-col>
       </a-row>
@@ -82,16 +66,6 @@
         </template>
         <template #createtime="{ record }">
           {{dayjs(record.createtime*1000).format("YYYY-MM-DD")}}
-        </template>
-        <template #status="{ record }">
-          <a-switch type="round" v-model="record.status" :checked-value="0" :unchecked-value="1" @change="handleStatus(record)">
-              <template #checked>
-                开
-              </template>
-              <template #unchecked>
-                关
-              </template>
-            </a-switch>
         </template>
         <template #operations="{ record }">
           <Icon icon="svgfont-bianji1" class="iconbtn" @click="handleEdit(record)" :size="18" color="#0960bd"></Icon>
@@ -126,24 +100,7 @@
   import { Pagination } from '@/types/global';
   const { t } = useI18n();
   const [registerModal, { openModal }] = useModal();
-  const densityList = computed(() => [
-    {
-      name: t('searchTable.size.mini'),
-      value: 'mini',
-    },
-    {
-      name: t('searchTable.size.small'),
-      value: 'small',
-    },
-    {
-      name: t('searchTable.size.medium'),
-      value: 'medium',
-    },
-    {
-      name: t('searchTable.size.large'),
-      value: 'large',
-    },
-  ]);
+  
   //分页
   const basePagination: Pagination = {
     current: 1,
@@ -165,10 +122,7 @@
     //查询字段
     const generateFormModel = () => {
     return {
-      trade_no: '',
-      name: '',
-      createdTime: [],
-      status: '',
+      username: '',
     };
   };
   const formModel = ref(generateFormModel());
@@ -255,6 +209,10 @@
   //删除数据
   const handleDel=async(record:any)=>{
     try {
+        if (record.username == "admin") {
+          Message.warning({content:"不要删除自己",id:"upStatus"})
+          return
+        }
         Message.loading({content:"删除中",id:"upStatus"})
        const res= await del({ids:[record.id]});
        if(res){

@@ -3,35 +3,18 @@ import type { TableColumnData } from '@arco-design/web-vue/es/table/interface';
   export const columns = computed<TableColumnData[]>(() => [
     {
       title: '排序',
-      dataIndex: 'weigh',
+      dataIndex: 'order_id',
       width:80,
       align:"center"
     },
     {
-      title: 'ID',
-      dataIndex: 'id',
-      width:80,
+      title: '类型',
+      dataIndex: 'account_type',
       align:"center"
     },
     {
-      title: '字典名称',
-      dataIndex: 'keyname',
-      align:"center"
-    },
-    {
-      title: '字典项值',
-      dataIndex: 'keyvalue',
-      align:"center"
-    },
-    {
-      title: '字典描述',
-      dataIndex: 'des',
-      align:"center"
-    },
-    {
-      title: '状态',
-      dataIndex: 'status',
-      slotName: 'status',
+      title: '说明',
+      dataIndex: 'remark',
       align:"center"
     },
     {

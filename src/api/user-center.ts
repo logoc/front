@@ -21,9 +21,10 @@ export interface MyProjectRecord {
 export interface BasicInfoModel {
   id: number;
   name:string;
-  nickname: string;
+  username:string;
   mobile: string;
   remark: string;
+  rolename:string,
   createtime: string;
 }
 export interface MyTeamRecord {

@@ -23,43 +23,34 @@
           :placeholder="$t('login.form.userName.placeholder')"
         >
           <template #prefix>
-            <icon-user />
+            <icon-phone />
           </template>
         </a-input>
       </a-form-item>
+
       <a-form-item
-        field="password"
-        :rules="[{ required: true, message: $t('login.form.password.errMsg') }]"
-        :validate-trigger="['change', 'blur']"
-        hide-label
-      >
-        <a-input-password
-          v-model="userInfo.password"
-          :placeholder="$t('login.form.password.placeholder')"
-          allow-clear
+          field="code"
+          :rules="[{ required: true, message: $t('login.form.verification.errMsg') }]"
+          :validate-trigger="['change', 'blur']"
+          hide-label
         >
-          <template #prefix>
-            <icon-lock />
-          </template>
-        </a-input-password>
-      </a-form-item>
-      <a-space :size="16" direction="vertical">
-        <div class="login-form-password-actions">
-          <a-checkbox
-            checked="rememberPassword"
-            :model-value="loginConfig.rememberPassword"
-            @change="setRememberPassword as any"
+          <a-input
+            v-model="userInfo.code"
+            :placeholder="$t('login.form.verification.placeholder')"
           >
-            {{ $t('login.form.rememberPassword') }}
-          </a-checkbox>
-          <a-link @click="GoToType('message')">短信登陆</a-link>
-        </div>
+            <template #prefix>
+              验证码
+            </template>
+            <template #append>
+              <a class="vbtn" @click="getVerification()"> {{ codeNum == 60 ? "发送验证码" : `(${codeNum})发送验证码` }}</a>
+            </template>
+          </a-input>
+        </a-form-item>
+
+      <a-space :size="16" direction="vertical">
         <a-button type="primary" html-type="submit" long :loading="loading">
           {{ $t('login.form.login') }}
         </a-button>
-        <!-- <a-button type="text" long class="login-form-register-btn">
-          {{ $t('login.form.register') }}
-        </a-button> -->
       </a-space>
     </a-form>
   </div>
@@ -74,7 +65,7 @@
   import { useStorage } from '@vueuse/core';
   import { useUserStore } from '@/store';
   import useLoading from '@/hooks/loading';
-  import type { LoginData } from '@/api/user';
+  import { LoginData, getCode } from '@/api/user';
   const emit = defineEmits(['reback'])
   const router = useRouter();
   const { t } = useI18n();
@@ -89,10 +80,12 @@
     rememberPassword: true,
     username: '', // 演示默认值-上线环境请赋空值
     password: '', // 默认密码-上线环境请赋空值
+    code: '', // 验证码
   });
   const userInfo = reactive({
     username: loginConfig.value.username,
     password: loginConfig.value.password,
+    code: '', // 验证码
   });
 
   const handleSubmit = async ({
@@ -132,12 +125,31 @@
       }
     }
   };
-  const setRememberPassword = (value: boolean) => {
-    loginConfig.value.rememberPassword = value;
-  };
-  const GoToType=(keys:string)=>{
-    emit('reback',keys)
-  }
+
+  // 定时器id
+  let clearId=ref();
+    // 倒计时时间
+    const codeNum = ref(60);
+    // 是否发送了验证码 防止连点
+    const isClickSend = ref(false)
+    const getVerification=async ()=>{
+         if(!userInfo.value.username){
+            errorMessage.value ="请输入手机号"
+            return
+         }
+        if (isClickSend.value || codeNum.value != 60) return;
+            isClickSend.value = true;
+            const res = await getCode({email:userInfo.value.username});
+            clearId.value = setInterval(() => {
+                codeNum.value--;
+                if (codeNum.value == 0) {
+                clearInterval(clearId.value);
+                codeNum.value = 60;
+                isClickSend.value = false;
+                }
+            }, 1000);
+            console.log("sendCode", res);
+    }
 </script>
 
 <style lang="less" scoped>
@@ -174,4 +186,13 @@
       color: var(--color-text-3) !important;
     }
   }
+  .vbtn{
+        height: 100%;
+        display: flex;
+        align-items: center;
+        padding-top: 2px;
+        color: rgb(var(--arcoblue-5));
+        cursor: pointer;
+        user-select: none;
+    }
 </style>

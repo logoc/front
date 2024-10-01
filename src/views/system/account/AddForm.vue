@@ -3,8 +3,8 @@
     <a-form ref="formRef" :model="formData" auto-label-width>
       <a-row :gutter="16">
         <a-col :span="12">
-          <a-form-item field="username" label="登录账号" style="margin-bottom:15px;" :rules="[{required:true,message:'请填写用户名'}]"
-          :validate-trigger="['change', 'blur']">
+          <a-form-item field="username" label="登录账号" style="margin-bottom:15px;"  :rules="usernameRules"
+          :validate-trigger="['change', 'blur']" required>
             <a-input v-model="formData.username" placeholder="请填登录账号" />
           </a-form-item>
         </a-col>
@@ -21,13 +21,13 @@
                 title: 'name',
                 children: 'children'
               }"
-             multiple v-model="formData.roleid">
+              v-model="formData.roleid">
             </a-tree-select>
           </a-form-item>
         </a-col>
         <a-col :span="12">
           <a-form-item field="password" label="登录密码" style="margin-bottom:15px;">
-            <a-input v-model="formData.password" placeholder="登录密码(不修改则为空，默认密码123456)" />
+            <a-input v-model="formData.password" placeholder="登录密码(不修改则为空，默认密码God123@)" />
           </a-form-item>
         </a-col>
         <a-col :span="12">
@@ -80,7 +80,6 @@
   import { cloneDeep } from 'lodash-es';
   //api
   import { getRole, save,DataItem,isAccountexist} from '@/api/system/account';
-  import { getParent } from '@/api/system/dept';
   import { IconPicker ,Icon} from '@/components/Icon';
   import { Message } from '@arco-design/web-vue';
   import type { RequestOption} from '@arco-design/web-vue/es/upload/interfaces';
@@ -132,7 +131,7 @@
           if (!res) {
             setLoading(true);
             if(!unref(isUpdate)&&formData.value.password==""){
-              formData.value.password="123456"
+              formData.value.password="God123@"
             }
             Message.loading({content:"更新中",id:"upStatus"})
             await save(unref(formData));

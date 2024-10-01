@@ -22,7 +22,6 @@ const useUserStore = defineStore('user', {
     businessID: 0,
     rooturl: '',
     city: '',
-    company: '',
     rolename: '默认',
     sessionTimeout: false,//登录是否已过期
   }),

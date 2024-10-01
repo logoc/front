@@ -5,14 +5,14 @@
       <a-row style="margin-bottom: 10px">
         <a-col :span="24" >
           <a-space size="large">
-            <a-select v-model="formModel.platform" placeholder="平台类型" :style="{width:'220px'}">
+            <a-select v-model="formModel.platform" @change="handleChangePlat" placeholder="不限" :style="{width:'220px'}">
               <template #prefix>平台类型:</template>
-              <a-option v-for="item in platformList" :value="item.cate">{{ item.cate }}</a-option>
+              <a-option v-for="item in platformList" :value="item.plat_name">{{ item.plat_name }}</a-option>
             </a-select>
             <a-select v-model="formModel.fansCnt" :options="fansCntOptions" placeholder="粉丝数" :style="{width:'220px'}" >
               <template #prefix>粉丝数:</template>
             </a-select>
-            <a-select v-model="formModel.priceRange" :options="pricesOptions" placeholder="价格区间" :style="{width:'250px'}" >
+            <a-select v-model="formModel.priceRange" :options="pricesOptions" placeholder="价格区间" :style="{width:'230px'}" >
               <template #prefix>
                 平台价:
               </template>
@@ -23,12 +23,12 @@
 
       <a-row style="margin-bottom: 10px">
         <a-col :span="24" >
-          <a-checkbox-group v-model="formModel.accountType" @change="handleChange">
+          <a-checkbox-group v-model="formModel.accountType">
             <a-tag size="large">账号类型:</a-tag>
             <template v-for="item in accountTypeList" :key="item" >
-              <a-checkbox :value="item.cate">
+              <a-checkbox :value="item.account_type">
                 <template #checkbox="{ checked }">
-                  <a-tag size="large" :checked="checked" default-checked checkable color="arcoblue">{{ item.cate }}</a-tag>
+                  <a-tag size="large" :checked="checked" default-checked checkable color="arcoblue">{{ item.account_type }}</a-tag>
                 </template>
               </a-checkbox>
             </template>
@@ -39,7 +39,7 @@
     <a-row style="margin-bottom: 10px">
       <a-col :span="14">
         <a-space>
-          <a-input :style="{width:'300px'}" v-model="formModel.accountNikeName" placeholder="账号昵称" allow-clear >
+          <a-input :style="{width:'250px'}" v-model="formModel.accountNikeName" placeholder="账号昵称" allow-clear >
             <template #prefix>账号昵称: </template>
           </a-input>
           <a-input :style="{width:'250px'}" v-model="formModel.projectNo" placeholder="项目号" allow-clear >
@@ -97,7 +97,7 @@
          {{ record.name }}<span v-if="record.nickname" style="padding-left: 5px;color: var(--color-neutral-4);">{{ record.nickname }}</span>
         </template>
         <template #operations="{ record }">
-          <Icon icon="svgfont-bianji1" class="iconbtn" @click="handleEdit(record)" :size="18" color="#0960bd"></Icon>
+          <Icon icon="svgfont-chakan" class="iconbtn" @click="handleView(record)" :size="18" color="#0960bd"></Icon>
           <a-divider direction="vertical" />
           <a-popconfirm content="您确定要删除吗?" @ok="handleDel(record)">
             <Icon icon="svgfont-icon7" class="iconbtn" :size="18" color="#ed6f6f"></Icon>
@@ -106,7 +106,7 @@
       </a-table>
     </a-card>
     <!--表单-->
-    <EditForm @register="registerModal" @success="handleData"/>
+    <ViewForm @register="registerModal" @success="handleData"/>
   </div>
 </template>
 
@@ -117,24 +117,21 @@
   import cloneDeep from 'lodash/cloneDeep';
   import dayjs from 'dayjs';
   //api
-  import { getSearch, exportData, del, CateItem, getCateList} from '@/api/project/project';
+  import { getSearch, exportData, del, AccountItem, getPlatList, PlatItem, getAccountList} from '@/api/project/project';
   //数据
   import { columns } from './data';
   //表单
   import { useModal } from '/@/components/Modal';
-  import EditForm from './EditForm.vue';
+  import ViewForm from './ViewForm.vue';
   import { useI18n } from 'vue-i18n';
-  import axios from 'axios';
   import {Icon} from '@/components/Icon';
   import { Message } from '@arco-design/web-vue';
   import { Pagination } from '@/types/global';
   import { useRoute } from 'vue-router'
-import { any } from 'vue-types';
   const route = useRoute();
-  const { t } = useI18n();
   const [registerModal, { openModal }] = useModal();
-  const platformList = ref<CateItem[]>([]);
-  const accountTypeList = ref<CateItem[]>([]);
+  const platformList = ref<PlatItem[]>([]);
+  const accountTypeList = ref<AccountItem[]>([]);
   const rowSelection = reactive({
       type: 'checkbox',
       showCheckedAll: true,
@@ -162,10 +159,10 @@ import { any } from 'vue-types';
    //查询字段
    const generateFormModel = () => {
     return {
-      platform: ["不限"],
+      platform: [],
       fansCnt: '0',
       priceRange: '0',
-      accountType: ['不限'],
+      accountType: [],
       projectNo: '',
       cooperateTime: 0,
       accountNikeName: "",
@@ -175,7 +172,6 @@ import { any } from 'vue-types';
   const formModel = ref(generateFormModel());
   const fetchData = async () => {
     setLoading(true);
-    fetchCateList()
     try {
       const data= await getSearch({page:pagination.current,pageSize:pagination.pageSize,...formModel.value});
       renderData.value = data.items;
@@ -188,22 +184,31 @@ import { any } from 'vue-types';
     }
   };
 
-  const fetchCateList = async () => {
+  const fetchPlatList = async () => {
     try {
-      const data= await getCateList({});
-      platformList.value.length = 0
+      const data= await getPlatList({});
       accountTypeList.value.length = 0
-      for (let item of data.items) {
-        if (item.cate_type == "platform") {
-          platformList.value.push(item)
-        } else if  (item.cate_type == "account_type") {
-          accountTypeList.value.push(item)
-        }
+      for (let item of data) {
+        platformList.value.push(item)
       }
     } catch (err) {
       // you can report use errorHandler or other
     }
   };
+
+  //菜单改变
+  const handleChangePlat=async ()=>{
+    try {
+      const data= await getAccountList({plat_name:formModel.value.platform});
+      accountTypeList.value.length = 0
+      for (let item of data.items) {
+        accountTypeList.value.push(item)
+      }
+      formModel.accountType = []
+    } catch (err) {
+      // you can report use errorHandler or other
+    }
+  }
 
   //组件挂载完成后执行的函数
   onMounted(()=>{
@@ -216,7 +221,7 @@ import { any } from 'vue-types';
     formModel.value = generateFormModel();
     fetchData();
   };
-  const DOMAIN = window?.globalConfig.Main_url;
+  var now = dayjs().format('YYYYMMDD_HHmmss')
   const download = async () => {
     try {
       const res = await exportData(formModel.value);
@@ -225,7 +230,7 @@ import { any } from 'vue-types';
         const downloadUrl = URL.createObjectURL(blob)
         const link = document.createElement('a')
         link.href = downloadUrl
-        link.download = '发文数据.xlsx'
+        link.download = '数据下载_'+now+'.xlsx'
         link.click()
       } else {
         Message.error({content:"下载失败!", id:"upStatus"})
@@ -239,24 +244,7 @@ import { any } from 'vue-types';
   };
 
   fetchData();
-
-  const handleSelectDensity = (
-    val: string | number | Record<string, any> | undefined,
-    e: Event
-  ) => {
-    size.value = val as SizeProps;
-  };
-
-  const handleChange = (values) => {
-    if (values.length > 1) {
-      for (let v of values) {
-        if (v == "不限") {
-          console.log(v)
-        } 
-      }
-    }
-  };
-
+  fetchPlatList();
   watch(
     () => columns.value,
     (val) => {
@@ -270,7 +258,7 @@ import { any } from 'vue-types';
   );
 
   //编辑数据
-  const handleEdit=async(record:any)=>{
+  const handleView=async(record:any)=>{
     openModal(true, {
       isUpdate: true,
       record:record

@@ -155,12 +155,7 @@
   };
 
   fetchData();
-  const handleSelectDensity = (
-    val: string | number | Record<string, any> | undefined,
-    e: Event
-  ) => {
-    size.value = val as SizeProps;
-  };
+
 
   watch(
     () => columns.value,
@@ -242,18 +237,7 @@
     },
    
   ]);
-  //存储单位换算
-  const suffix = ['B', 'KB', 'MB', 'GB', 'TB'];
-  const filesizeFont=(size:any)=>{
-    const base = Math.floor(Math.log2(size) / 10);
-    const index = clamp(base, 0, 4);
-    return (size / 2 ** (10 * index)).toFixed(2) + suffix[index];
-  }
-  function clamp(v:any, min:any, max:any) {
-    if (v < min) return min;
-    if (v > max) return max;
-    return v;
-  }
+
   //获取type过滤
   const getCateTypeName=(val:string)=>{
         var text=""

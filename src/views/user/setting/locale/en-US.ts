@@ -39,6 +39,8 @@ export default {
 
   'userSetting.basicInfo.form.label.name': 'Name',
   'userSetting.form.error.name.required': 'Please enter name',
+  'userSetting.basicInfo.placeholder.name': 'Please enter name',
+
   'userSetting.basicInfo.form.label.countryRegion': 'Country/region',
   'userSetting.basicInfo.placeholder.countryRegion':
     'Please select country/region',

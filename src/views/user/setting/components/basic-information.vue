@@ -78,10 +78,11 @@
   const formData = ref<BasicInfoModel>({
     id: 0,
     name: "",
-    nickname: "",
+    username: "",
     mobile:"",
     remark:  "",
     createtime: "",
+    rolename:"",
   });
   const { loading, setLoading } = useLoading(true);
   const fetchData = async () => {
@@ -98,11 +99,12 @@
   const validate = async () => {
     const res = await formRef.value?.validate();
     if (!res) {
-      Message.loading({content:"更新中",id:"delaction"})
+      delete formData.value.rolename
       const res = await saveInfo(formData.value)
-      if(res){
-        Message.success({content:"更新成功",id:"delaction"})
+      if(res == 0){
+        Message.success({content:"更新成功",id:"upStatus"})
       }else{
+        Message.error({content:"更新失败",id:"upStatus"})
         Message.clear()
       }
     }

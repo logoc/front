@@ -1,5 +1,5 @@
 <template>
-  <BasicModal v-bind="$attrs" @register="registerModal" :isPadding="false" :loading="loading" width="800px" @height-change="onHeightChange" :minHeight="modelHeight" :title="getTitle" @ok="handleSubmit">
+  <BasicModal v-bind="$attrs" @register="registerModal" :isPadding="false" :loading="loading" width="700px" @height-change="onHeightChange" :minHeight="modelHeight" :title="getTitle" @ok="handleSubmit">
     <div class="addFormbox" :style="{'min-height':`${windHeight}px`}">
       <div class="tabs-content">
         <a-form ref="formRef" :model="formData" auto-label-width>
@@ -8,24 +8,19 @@
               <a-scrollbar style="overflow: auto;" :style="{height:`${windHeight}px`}">
                 <div class="besecontent" >
                   <a-row :gutter="16">
-                    <a-col :span="16">
-                      <a-form-item field="keyname" label="字典名称" validate-trigger="input" :rules="[{required:true,message:'请填写字典名称'}]" >
-                        <a-input v-model="formData.keyname" placeholder="填写字典名称" :max-length="50" allow-clear show-word-limit />
+                    <a-col :span="14">
+                      <a-form-item field="account_type" label="账号类型" validate-trigger="input" :rules="accountTypeRules" >
+                        <a-input v-model="formData.account_type" placeholder="填写账号类型" :max-length="50" allow-clear show-word-limit />
                       </a-form-item>
                     </a-col>
-                    <a-col :span="16">
-                      <a-form-item field="keyvalue" label="字典项值" validate-trigger="input" :rules="[{required:true,message:'请填字典项值'}]" >
-                        <a-input v-model="formData.keyvalue" placeholder="填写字典项值" :max-length="50" allow-clear show-word-limit />
-                      </a-form-item>
-                    </a-col>
-                    <a-col :span="16">
-                      <a-form-item field="weigh" label="排序" validate-trigger="input" style="margin-bottom:15px;">
-                        <a-input-number  v-model="formData.weigh" placeholder="请填排序" />
+                    <a-col :span="10">
+                      <a-form-item field="order_id" label="排序" validate-trigger="input" style="margin-bottom:15px;">
+                        <a-input-number  v-model="formData.order_id" placeholder="请填排序" />
                       </a-form-item>
                     </a-col>
                     <a-col :span="24">
-                      <a-form-item field="des" label="字典描述" style="margin-bottom:15px;">
-                        <a-textarea v-model="formData.des" placeholder="请填字典描述"  :max-length="200" allow-clear show-word-limit :auto-size="{minRows:3,maxRows:5}"/>
+                      <a-form-item field="remark" label="备注" style="margin-bottom:15px;">
+                        <a-textarea v-model="formData.remark" placeholder="请填备注"  :max-length="200" allow-clear show-word-limit :auto-size="{minRows:3,maxRows:5}"/>
                       </a-form-item>
                     </a-col>
                   </a-row>
@@ -44,7 +39,7 @@
   import useLoading from '@/hooks/loading';
   import { cloneDeep } from 'lodash-es';
   //api
-  import { save } from '@/api/datacenter/dictionary';
+  import { save, isAccountTypeExist } from './api/account_api';
   import { Message } from '@arco-design/web-vue';
   export default defineComponent({
     name: 'AddForm',
@@ -52,20 +47,19 @@
     emits: ['success'],
     setup(_, { emit }) {
       const isUpdate = ref(false);
-      const modelHeight= ref(350);
-      const windHeight= ref(350);
+      const modelHeight= ref(200);
+      const windHeight= ref(200);
       //表单
       const { loading, setLoading } = useLoading();
       const formRef = ref<FormInstance>();
       //表单字段
       const basedata={
-            id:0,
-            keyname: '',
-            keyvalue: '',
-            des: '',
-            tablename: "",
-            status: 0,
-            weigh:1,
+            id: 0,
+            account_type: '',
+            plat_id: 0,
+            createtime: '',
+            remark: '',
+            order_id: 0,
         }
       const formData = ref(basedata)
       //编辑器
@@ -79,7 +73,7 @@
           }else{
             formData.value=basedata
           }
-          formData.value.tablename=data.tablename
+          formData.value.plat_id=data.plat_id
           setLoading(false);
       });
       const getTitle = computed(() => (!unref(isUpdate) ? '新增数据' : '编辑数据'));
@@ -88,20 +82,44 @@
       try {
           const res = await formRef.value?.validate();
           if (!res) {
-            setLoading(true);
-            Message.loading({content:"提交中",id:"upStatus"})
             let savedata=cloneDeep(unref(formData))
-            await save(savedata);
-            Message.success({content:"提交成功",id:"upStatus"})
-            closeModal()
-            emit('success');
-            setLoading(false);
+            const resultdata = await save(savedata);
+            console.log(resultdata);
+            if(resultdata > 0){
+              Message.success({ content: '创建成功', id:"saveData"});
+              closeModal()
+              emit('success');
+            }else{
+              Message.error({ content: '创建失败', id:"saveData"});
+            }
+           
           }
         } catch (error) {
-          setLoading(false);
+          Message.error({ content: '创建失败,error', id:"saveData"});
           Message.clear("top")
         }
       };
+
+
+      //验证账号唯一性
+      const accountTypeRules = [{
+         validator: (value:any, cb:any) => {
+          return new Promise(async(resolve) => {
+            if(!value){
+              cb('请填写类型名称')
+            }else{
+              if (!isUpdate.value) {
+                let sdata={account_type:value, plat_id:formData.value.plat_id}
+                const resData = await isAccountTypeExist(sdata);
+                if(resData.code==1){
+                  cb(resData.message)
+                }
+              }
+            }
+            resolve(true)
+          })
+        }
+      }];
        //监听高度
        const onHeightChange=(val:any)=>{
         windHeight.value=val
@@ -118,6 +136,7 @@
           { label: '禁用', value: 1 },
           ],
         modelHeight,
+        accountTypeRules,
         onHeightChange,windHeight,
       };
     },

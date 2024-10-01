@@ -19,7 +19,7 @@
             </template>
             </a-upload>
 
-            <a-button  @click="handleDownloadTemplate">
+            <a-button @click="handleDownloadTemplate">
               <template #icon>
                 <icon-download />
               </template>
@@ -69,8 +69,16 @@
         @page-change="handlePaageChange" 
         @page-size-change="handlePaageSizeChange" 
       >
+        <template #create_time="{ record }">
+            {{dayjs(record.create_time*1000).format("YYYY-MM-DD")}}
+        </template> 
         <template #file_name="{ record }">
-          <a-link :href="record.url" status="success" target="_blank">{{record.file_name}}</a-link>
+          <a-button type="text" @click="handleDownloadFile(record)">
+            <template #icon>
+              <icon-download />
+            </template>
+            {{record.file_name}}
+          </a-button> 
         </template>
         <template #approve_status="{ record }">
           <span v-if="record.approve_status==0" :style="{color:'gray'}">未审批</span>
@@ -96,13 +104,14 @@
   import { computed, ref, reactive, watch, onMounted } from 'vue';
   import useLoading from '@/hooks/loading';
   import type { TableColumnData } from '@arco-design/web-vue/es/table/interface';
-  import type { SelectOptionData } from '@arco-design/web-vue/es/select/interface';
   import cloneDeep from 'lodash/cloneDeep';
   //api
   import { uploadExcelApi, getList, del} from '@/api/project/upfile';
+  import { getResourceExcelFile} from '@/api/project/project';
   //数据
   import { columns} from './data';
   //表单
+  import dayjs from 'dayjs';
   import { useModal } from '/@/components/Modal';
   import CateIndex from './cate/index.vue';
   import { useI18n } from 'vue-i18n';
@@ -220,19 +229,34 @@
     fetchData();
   };
 
- const DOMAIN = window?.globalConfig.Main_url;
- const handleDownloadTemplate = () => {
-  let a = document.createElement('a')
-  a.href = `${DOMAIN}resource/staticfile/template.xlsx`
-  a.click()
- }
-
-
-  const handleDownload = (url:any) => {
+  const DOMAIN = window?.globalConfig.Main_url;
+  const handleDownloadTemplate = () => {
     let a = document.createElement('a')
-    a.href = `${DOMAIN}url`
+    a.href = `${DOMAIN}resource/staticfile/template.xlsx`
     a.click()
   }
+  
+  const handleDownloadFile = async(record:any) => {
+    try {
+      const upTime = dayjs(record.create_time*1000).format("YYYY-MM-DD")
+      const res = await getResourceExcelFile(record);
+      if (res.status == 200) {
+        const blob = new Blob([res.data], {type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'})
+        const downloadUrl = URL.createObjectURL(blob)
+        const link = document.createElement('a')
+        link.href = downloadUrl
+        link.download = upTime + "_" + record.file_name
+        link.click()
+      } else {
+        Message.error({content:"下载失败!", id:"upStatus"})
+      }
+    } catch(error) {
+      Message.error({content:"下载失败",id:"upStatus"})
+    }
+    // alert(JSON.stringify(formModel.value));
+  };
+
+  
   fetchData();
   watch(
     () => columns.value,

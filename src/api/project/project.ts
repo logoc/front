@@ -9,18 +9,32 @@ enum Api {
     save = '/project/project/save',
     update = '/project/project/update',
     upStatus = '/project/project/upStatus',
-    exportData = '/project/project/get_export',
-    exportDataOwner = '/project/project/get_export_owner',
     del = '/project/project/del',
-    getExportLog = '/project/project/get_exportlog',
-    getCateList = '/project/upconfig/get_list_nopage',
+    getPlatList = '/platmanager/plat/get_list',
+    getAccountList = '/platmanager/account/get_list_nopage',
     
+    getResourceExcelFile = '/project/resource/get_excelfile',
+
+    
+    getExportLog = '/project/export/get_list',
+    exportData = '/project/export/get_export',
+    exportDataOwner = '/project/export/get_export_owner',
 }
 
-//列表数据
-export function getCateList(params: object) {
-  return defHttp.get({ url: Api.getCateList, params:params }, { errorMessageMode: 'none' });
+export function getResourceExcelFile(params: object) {
+  return defHttp.get({ url: Api.getResourceExcelFile,params:params, responseType:'arraybuffer' }, { isReturnNativeResponse: true });
 }
+
+
+//列表数据
+export function getPlatList(params: object) {
+  return defHttp.get({ url: Api.getPlatList, params:params }, { errorMessageMode: 'none' });
+}
+
+export function getAccountList(params: object) {
+  return defHttp.get({ url: Api.getAccountList, params:params }, { errorMessageMode: 'none' });
+}
+
 
 export function getSearchOwner(params: object) {
   return defHttp.get({ url: Api.getSearchOwner, params:params }, { errorMessageMode: 'none' });
@@ -89,8 +103,16 @@ export function userUploadApi(
   return defHttp.uploadFile<UploadItem>({ url:`${DOMAIN}/matter/picture/uploadFile`,onUploadProgress},params);
 }
 
-export interface CateItem {
+export interface AccountItem {
   id:number,
-  cate_type:string,
-  cate: string;
+  account_type:string,
+  plat_id:number
+  order_id: number;
+}
+
+
+export interface PlatItem {
+  id:number,
+  plat_name:string,
+  order_id:number,
 }

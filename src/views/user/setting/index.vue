@@ -27,7 +27,8 @@
   import useLoading from '@/hooks/loading';
   const formData = ref<BasicInfoModel>({
     id: 0,
-    nickname: "",
+    username: "",
+    name:"",
     mobile:"",
     remark:  "",
     createtime: "",

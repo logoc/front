@@ -98,7 +98,6 @@
   //数据
   import { columns} from './data';
   //表单
-  import { useModalInner } from '/@/components/Modal';
   import CateIndex from './cate/index.vue';
   import { useModal } from '/@/components/Modal';
   import { useI18n } from 'vue-i18n';
@@ -250,7 +249,7 @@
 
 <script lang="ts">
   export default {
-    name: 'article',
+    name: 'test',
   };
 </script>
 

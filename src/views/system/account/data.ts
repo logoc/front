@@ -28,12 +28,6 @@ import type { TableColumnData } from '@arco-design/web-vue/es/table/interface';
       align:"center"
     },
     {
-      title: '状态',
-      dataIndex: 'status',
-      slotName: 'status',
-      align:"center"
-    },
-    {
       title: '创建时间',
       dataIndex: 'createtime',
       slotName: 'createtime',

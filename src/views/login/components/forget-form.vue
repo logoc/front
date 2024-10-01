@@ -1,7 +1,6 @@
 <template>
     <div class="login-form-wrapper">
       <div class="login-form-title">重置密码</div>
-      <!-- <div class="login-form-sub-title">{{ loginSubTitle }}</div> -->
       <div class="login-form-error-msg">{{ errorMessage }}</div>
       <a-form
         ref="loginForm"
@@ -154,13 +153,13 @@
   <style lang="less" scoped>
     .login-form {
       &-wrapper {
-        width: 320px;
+        width: 360px;
       }
   
       &-title {
         color: var(--color-text-1);
         font-weight: 500;
-        font-size: 24px;
+        font-size: 28px;
         line-height: 32px;
       }
   

@@ -1,9 +1,9 @@
 <template>
-  <BasicModal v-bind="$attrs" @register="registerModal" :loading="loading" helpMessage="编辑和修改菜单" width="900px" :minHeight="500" :title="getTitle" @ok="handleSubmit">
+  <ViewModal v-bind="$attrs" @register="registerModal" :loading="loading" helpMessage="预览" width="900px" :minHeight="450" :title="getTitle" @ok="handleSubmit">
     <a-form ref="formRef" :model="formData" auto-label-width>
       <a-row :gutter="16">
         <a-col :span="12">
-          <a-form-item field="platform" label="合作平台" validate-trigger="input" :rules="[{required:true,message:'请填写合作平台'}]" style="margin-bottom:15px;">
+          <a-form-item  label="合作平台" style="margin-bottom:15px;">
             <a-input v-model="formData.platform" placeholder="请填合作平台" readonly/>
           </a-form-item>
         </a-col>
@@ -24,11 +24,11 @@
         </a-col>
         <a-col :span="12">
           <a-form-item field="fanscnt" label="粉丝数" style="margin-bottom:15px;" :rules="[{required:true}]">
-            <a-input v-model="formData.fanscnt" placeholder="请填粉丝数" readonly>
+            <a-input-number v-model="formData.fanscnt" placeholder="请填粉丝数" readonly>
             <template #append>
             万
             </template>
-            </a-input>
+            </a-input-number>
           </a-form-item>
         </a-col>
         <a-col :span="12">
@@ -43,12 +43,12 @@
         </a-col>
         <a-col :span="12">
           <a-form-item field="platform_price" label="平台价/刊例" style="margin-bottom:15px;" :rules="[{required:true}]">
-            <a-input v-model="formData.platform_price" placeholder="请填平台价/刊例" readonly/>
+            <a-input-number v-model="formData.platform_price" placeholder="请填平台价/刊例" readonly/>
           </a-form-item>
         </a-col>
         <a-col :span="12">
           <a-form-item field="actual_price" label="执行价(含税)" style="margin-bottom:15px;" :rules="[{required:true}]">
-            <a-input v-model="formData.actual_price" placeholder="请填执行价(含税)" readonly/>
+            <a-input-number v-model="formData.actual_price" placeholder="请填执行价(含税)" readonly/>
           </a-form-item>
         </a-col>
         <a-col :span="12">
@@ -96,24 +96,23 @@
         </a-col>
       </a-row>
     </a-form>
-  </BasicModal>
+  </ViewModal>
 </template>
 <script lang="ts">
   import { defineComponent, ref, computed, unref} from 'vue';
-  import { BasicModal, useModalInner } from '/@/components/Modal';
+  import {  ViewModal, useModalInner } from '/@/components/Modal';
   import { FormInstance } from '@arco-design/web-vue/es/form';
   import useLoading from '@/hooks/loading';
   import { useI18n } from 'vue-i18n';
   import { cloneDeep } from 'lodash-es';
-  
   //api
   import { update} from '@/api/project/project';
   import { IconPicker ,Icon} from '@/components/Icon';
   import { Message } from '@arco-design/web-vue';
   export default defineComponent({
-    name: 'AddBook',
-    components: { BasicModal,IconPicker,Icon },
-    emits: ['success'],
+    name: 'ViewForm',
+    components: { ViewModal, IconPicker,Icon },
+    emits: ['cancel'],
     setup(_, { emit }) {
       const { t } = useI18n();
       const isUpdate = ref(false);
@@ -126,11 +125,11 @@
             cooperate_time: '',
             account_type: '',
             account_nikename: "",
-            fanscnt: "",
+            fanscnt: 0,
             publish_link: "",
             cooperate_type:"",
-            platform_price:"",
-            actual_price:"",//手机
+            platform_price:0,
+            actual_price:0,//手机
             discount_note:"",//邮箱
             tax_rate:"%",//地址
             department:"",//城市
@@ -151,25 +150,12 @@
             formData.value=basedata
           }
       });
-      const getTitle = computed(() => (!unref(isUpdate) ? '新增项目' : '编辑项目'));
+      const getTitle = "查看";
      //点击确认
      const { loading, setLoading } = useLoading();
      const handleSubmit = async () => {
-      try {
-          const res = await formRef.value?.validate();
-          if (!res) {
-            setLoading(true);
-            Message.loading({content:"更新中",id:"upStatus"})
-            await update(unref(formData));
-            Message.success({content:"更新成功",id:"upStatus"})
-            closeModal()
-            emit('success');
-            setLoading(false);
-          }
-        } catch (error) {
-          setLoading(false);
-          Message.clear("top")
-        }
+        closeModal()
+        emit('cancel');
       };
       //上传附件改变
       const onChange=(fileList:any)=>{

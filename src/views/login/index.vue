@@ -1,14 +1,8 @@
 <template>
   <div class="container">
     <div class="logo">
-      <img
-        alt="logo"
-        src="/logo.png"
-        style="width: 35px;"
-      />
       <div class="logo-text">{{ AppTitle }}</div>
     </div>
-    <LoginBanner />
     <div class="content">
       <div class="content-inner">
         <LoginForm v-if="showType=='login'" @reback="GoToType"/>
@@ -24,7 +18,6 @@
 <script lang="ts" setup>
 import { ref} from 'vue';
   import Footer from '@/components/footer/index.vue';
-  import LoginBanner from './components/banner.vue';
   import LoginForm from './components/login-form.vue';
   import ForgetForm from './components/forget-form.vue';
   //获取网站配置-应用名称
