@@ -5,9 +5,15 @@ export interface LoginData {
   username: string;
   password: string;
 }
+
+export interface LoginMsgData {
+  mobile: string;
+  code: string;
+}
 enum Api {
   //用户
    Login = '/user/login ',
+   LoginMsg = '/user/login_msg ',
    registerUser = '/user/registerUser ',
    Logout = '/user/logout',
    getCode = '/user/get_code',
@@ -20,6 +26,10 @@ enum Api {
 export function login(params: LoginData) {
   params=Object.assign({},params,{password:md5(params.password)})//加密推送
   return defHttp.post({ url: Api.Login, params:params}, { errorMessageMode: 'message' });
+}
+
+export function loginMsg(params: LoginMsgData) {
+  return defHttp.post({ url: Api.LoginMsg, params:params}, { errorMessageMode: 'message' });
 }
 //注册
 export function registerUser(params: LoginData) {

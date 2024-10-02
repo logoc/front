@@ -9,7 +9,7 @@ export const columns = computed<TableColumnData[]>(() => [
       align:'center'
     },
      {
-      title:  '下载用户账号',
+      title:  '下载账号',
       dataIndex: 'username',
       slotName: 'username',
       width: 80,

@@ -52,7 +52,7 @@
           >
             {{ $t('login.form.rememberPassword') }}
           </a-checkbox>
-          <a-link @click="GoToType('message')">短信登陆</a-link>
+          <a-link @click="GoToType('login-msg')">短信登陆</a-link>
         </div>
         <a-button type="primary" html-type="submit" long :loading="loading">
           {{ $t('login.form.login') }}

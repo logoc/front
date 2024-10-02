@@ -165,19 +165,20 @@
       const handleApprove=async(record:any)=>{
         try {
           if (record.status == undefined || record.status.length <= 0) {
-            console.log('请勾选');
             Message.error({content:"请勾选审批状态！",id:"upStatus"});
           } else {
             const res = await save({id:record.id, status: record.status, note: record.approve_note});
             if(res){
-              fetchData();
               Message.success({content:"审批成功",id:"upStatus"});
+              emit('success');
+              closeModal()
             }
           }
         }catch (error) {
           Message.error({content:"审批失败",id:"upStatus"});
           Message.clear("top");
-        } 
+        }
+        fetchData();
       }
       return { 
         registerModal, 

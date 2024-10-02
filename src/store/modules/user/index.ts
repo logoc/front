@@ -3,9 +3,11 @@ import router from '@/router';
 import type { RouteRecordRaw} from 'vue-router';
 import {
   login as userLogin,
+  loginMsg as userMsgLogin,
   logout as userLogout,
   getUserInfo,
   LoginData,
+  LoginMsgData,
 } from '@/api/user';
 import { setToken,getToken, clearToken } from '@/utils/auth';
 import { removeRouteListener } from '@/utils/route-listener';
@@ -58,6 +60,18 @@ const useUserStore = defineStore('user', {
     async login(loginForm: LoginData) {
       try {
         const res = await userLogin(loginForm);
+        setToken(res);
+        return this.afterLoginAction();
+      } catch (err) {
+        clearToken();
+        throw err;
+      }
+    },
+
+    // 短信登陆
+    async loginMsg(loginForm: LoginMsgData) {
+      try {
+        const res = await userMsgLogin(loginForm);
         setToken(res);
         return this.afterLoginAction();
       } catch (err) {

@@ -7,6 +7,7 @@
       <div class="content-inner">
         <LoginForm v-if="showType=='login'" @reback="GoToType"/>
         <ForgetForm v-else-if="showType=='forget'" @reback="GoToType"/>
+        <LoginMsgForm v-else-if="showType=='login-msg'" @reback="GoToType"/>
       </div>
       <div class="footer">
         <Footer />
@@ -19,6 +20,7 @@
 import { ref} from 'vue';
   import Footer from '@/components/footer/index.vue';
   import LoginForm from './components/login-form.vue';
+  import LoginMsgForm from './components/login-msg-form.vue';
   import ForgetForm from './components/forget-form.vue';
   //获取网站配置-应用名称
   const AppTitle = window?.globalConfig.AppTitle
