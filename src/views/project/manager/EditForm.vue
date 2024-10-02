@@ -107,7 +107,6 @@
   import { cloneDeep } from 'lodash-es';
   
   //api
-  import { update} from '@/api/project/project';
   import { IconPicker ,Icon} from '@/components/Icon';
   import { Message } from '@arco-design/web-vue';
   export default defineComponent({
@@ -154,23 +153,23 @@
       const getTitle = computed(() => (!unref(isUpdate) ? '新增项目' : '编辑项目'));
      //点击确认
      const { loading, setLoading } = useLoading();
-     const handleSubmit = async () => {
-      try {
-          const res = await formRef.value?.validate();
-          if (!res) {
-            setLoading(true);
-            Message.loading({content:"更新中",id:"upStatus"})
-            await update(unref(formData));
-            Message.success({content:"更新成功",id:"upStatus"})
-            closeModal()
-            emit('success');
-            setLoading(false);
-          }
-        } catch (error) {
-          setLoading(false);
-          Message.clear("top")
-        }
-      };
+    //  const handleSubmit = async () => {
+    //   try {
+    //       const res = await formRef.value?.validate();
+    //       if (!res) {
+    //         setLoading(true);
+    //         Message.loading({content:"更新中",id:"upStatus"})
+    //         await update(unref(formData));
+    //         Message.success({content:"更新成功",id:"upStatus"})
+    //         closeModal()
+    //         emit('success');
+    //         setLoading(false);
+    //       }
+    //     } catch (error) {
+    //       setLoading(false);
+    //       Message.clear("top")
+    //     }
+    //   };
       //上传附件改变
       const onChange=(fileList:any)=>{
         console.log("fileList",fileList)
@@ -179,7 +178,7 @@
       return { 
         registerModal, 
         getTitle, 
-        handleSubmit,
+        // handleSubmit,
         formRef,
         loading,
         formData,
