@@ -48,8 +48,8 @@
           </template>
           <template #operations="{ record }">
             <Icon icon="svgfont-bianji1" class="iconbtn" @click="handleEdit(record)" :size="18" color="#0960bd"></Icon>
-            <a-divider direction="vertical" />
-            <a-popconfirm content="您确定要删除吗?" @ok="handleDel(record)">
+            <a-divider direction="vertical" v-if="formModel.approve_status !== 1"/>
+            <a-popconfirm v-if="formModel.approve_status !== 1" content="您确定要删除吗?" @ok="handleDel(record)">
               <Icon icon="svgfont-icon7" class="iconbtn" :size="18" color="#ed6f6f"></Icon>
             </a-popconfirm>
         </template>
@@ -76,6 +76,7 @@
   import { Message } from '@arco-design/web-vue';
   //api
   import { getList} from './api';
+  import { del} from '@/api/project/project';
   import { IconPicker ,Icon} from '@/components/Icon';
   export default defineComponent({
     name: 'cateindex',
@@ -158,19 +159,19 @@
         fetchData();
       }
 
-        //删除数据
-        const handleDel=async(record:any)=>{
-          try {
-              Message.loading({content:"删除中",id:"upStatus"})
-            const res= await del({ids:[record.id]});
-            if(res){
-              fetchData();
-              Message.success({content:"删除成功",id:"upStatus"})
-            }
-          }catch (error) {
-            Message.clear("top")
-          } 
-        }
+      //删除数据
+      const handleDel=async(record:any)=>{
+        try {
+            Message.loading({content:"删除中",id:"upStatus"})
+          const res= await del({id:record.id});
+          if(res){
+            fetchData();
+            Message.success({content:"删除成功",id:"upStatus"})
+          }
+        }catch (error) {
+          Message.clear("top")
+        } 
+      }
    
       //编辑数据
       const addFormRef=ref()
@@ -199,7 +200,7 @@
         onHeightChange,windHeight,
         pagination,handlePaageChange,handlePaageSizeChange,
         renderData,
-        handleEdit, handleData,addFormRef,
+        handleEdit, handleData,addFormRef,handleDel,
         search,
       };
     },

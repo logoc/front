@@ -70,7 +70,7 @@
         @page-size-change="handlePaageSizeChange" 
       >
         <template #create_time="{ record }">
-            {{dayjs(record.create_time*1000).format("YYYY-MM-DD")}}
+            {{dayjs(record.create_time*1000).format("YYYY-MM-DD HH:mm:ss")}}
         </template> 
         <template #file_name="{ record }">
           <a-button type="text" @click="handleDownloadFile(record)">
@@ -88,8 +88,8 @@
 
         <template #operations="{ record }">
           <Icon icon="svgfont-chakan" class="iconbtn" @click="handleGroup(record)" :size="18" color="#0960bd"></Icon>
-          <a-divider direction="vertical" />
-          <a-popconfirm content="您确定要删除吗?" @ok="handleDel(record)">
+          <a-divider direction="vertical" v-if="record.approve_status !== 1" />
+          <a-popconfirm  v-if="record.approve_status !== 1" content="您确定要删除吗?" @ok="handleDel(record)">
             <Icon icon="svgfont-icon7" class="iconbtn" :size="18" color="#ed6f6f"></Icon>
           </a-popconfirm>
         </template>

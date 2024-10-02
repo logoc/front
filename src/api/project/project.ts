@@ -7,8 +7,9 @@ enum Api {
     getSearchOwner = '/project/project/get_search_owner',
     getContent= '/project/project/get_content',
     save = '/project/project/save',
-    update = '/project/project/update',
+    updatePubLink = '/project/project/update_publishlink',
     upStatus = '/project/project/upStatus',
+    
     del = '/project/project/del',
     getPlatList = '/platmanager/plat/get_list',
     getAccountList = '/platmanager/account/get_list_nopage',
@@ -56,8 +57,8 @@ export function upStatus(params: object) {
 }
 
 //更新状态
-export function update(params: object) {
-  return defHttp.post({ url: Api.update, params:params}, { errorMessageMode: 'message' });
+export function updatePubLink(params: object) {
+  return defHttp.post({ url: Api.updatePubLink, params:params}, { errorMessageMode: 'message' });
 }
 //删除数据
 export function del(params: object) {

@@ -1,6 +1,13 @@
 import { computed } from 'vue';
 import type { TableColumnData } from '@arco-design/web-vue/es/table/interface';
 export const columns = computed<TableColumnData[]>(() => [
+    {
+      title:  '下载日期',
+      dataIndex: 'createtime',
+      slotName: 'createtime',
+      width: 100,
+      align:'center'
+    },
      {
       title:  '下载用户账号',
       dataIndex: 'username',
@@ -22,13 +29,7 @@ export const columns = computed<TableColumnData[]>(() => [
       width: 80,
       align:'center'
     },
-    {
-      title:  '下载日期',
-      dataIndex: 'createtime',
-      slotName: 'createtime',
-      width: 100,
-      align:'center'
-    },
+   
     {
       title:  '文件链接',
       dataIndex: 'file_path',

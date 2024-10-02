@@ -8,6 +8,7 @@ export interface UploadItem {
     status: string;
     time: number;
     uid: string;
+    thumb: string;
     url: string;
   }
 //获取配置中的上传文件路径

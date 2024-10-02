@@ -67,17 +67,16 @@
         <template #approve_time="{record,column}">
           {{dayjs(record[column.dataIndex]*1000).format("YYYY-MM-DD HH:mm")}}
         </template>
+        <template #create_time="{record,column}">
+          {{dayjs(record[column.dataIndex]*1000).format("YYYY-MM-DD HH:mm")}}
+        </template>
         <template #approve_status="{ record }">
           <span v-if="record.approve_status==0" :style="{color:'gray'}">未审批</span>
           <span v-if="record.approve_status==1" :style="{color:'orangered'}">通过</span>
           <span v-if="record.approve_status==-1" :style="{color:'black'}">不通过</span>
         </template>
         <template #operations="{ record }">
-          <Icon icon="svgfont-shenpi" class="iconbtn" @click="handleGroup(record)" :size="18" color="#0960bd"> </Icon>
-          <a-divider direction="vertical" />
-          <a-popconfirm content="您确定要删除吗?" @ok="handleDel(record)">
-            <Icon icon="svgfont-icon7" class="iconbtn" :size="18" color="#ed6f6f"></Icon>
-          </a-popconfirm>
+          <Icon icon="svgfont-shenpi" class="iconbtn" @click="handleGroup(record)" :size="18" color="#0960bd">审批 </Icon>
         </template>
       </a-table>
     </a-card>
@@ -153,12 +152,6 @@
     };
   };
   const formModel = ref(generateFormModel());
-
-  // const [registerModal, { setModalProps, closeModal }] = useModalInner(async (data) => {
-  //     setModalProps({ confirmLoading: false });
-  //     formModel.value=cloneDeep(data.record)
-  //     fetchData()
-  // });
 
   const fetchData = async () => {
     setLoading(true);

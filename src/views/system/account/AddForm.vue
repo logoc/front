@@ -122,7 +122,7 @@
             formData.value=basedata
           }
       });
-      const getTitle = computed(() => (!unref(isUpdate) ? '新增管理账号' : '编辑管理账号'));
+      const getTitle = computed(() => (!unref(isUpdate) ? '新增账号' : '编辑账号'));
      //点击确认
      const { loading, setLoading } = useLoading();
      const handleSubmit = async () => {

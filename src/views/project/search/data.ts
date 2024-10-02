@@ -1,19 +1,11 @@
 import { computed } from 'vue';
 import type { TableColumnData } from '@arco-design/web-vue/es/table/interface';
 export const columns = computed<TableColumnData[]>(() => [
-    {
-      title:  '编号',
-      dataIndex: 'id',
-      slotName: 'id',
-      width: 80,
-      align:'center'
-    },
      {
        title:  '合作平台',
        dataIndex: 'platform',
        slotName: 'platform',
        width: 100,
-       fixed: 'left',
        align:'center'
      },
      {

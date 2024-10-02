@@ -139,7 +139,7 @@
 
   const handleDownloadFile = async(record:any) => {
     try {
-      const upTime = dayjs(record.create_time*1000).format("YYYY-MM-DD")
+      const upTime = dayjs(record.createtime*1000).format("YYYYMMDD_HHmmss")
       const res = await getResourceExcelFile(record);
       if (res.status == 200) {
         if (res.data.byteLength == 68) {
@@ -150,7 +150,7 @@
         const downloadUrl = URL.createObjectURL(blob)
         const link = document.createElement('a')
         link.href = downloadUrl
-        link.download = upTime + "_" + record.file_name
+        link.download = upTime + "_" + record.username + ".xlsx"
         link.click()
       } else {
         Message.error({content:"下载失败!", id:"upStatus"})

@@ -4,6 +4,7 @@ window.globalConfig = {
 	Main_url:`${domain}/`,//域名
 	Root_url:`${domain}/business`,//Api服务器域名
 	Upload_url:`${domain}/common`,//Api服务器域名
+	Avatar_API:`${domain}/common/uploadfile/get_image?url=`,//头像地址
 	Upload_url_dev:`${localhost}/common`,//Api服务器域名-开发环境
     Root_url_dev:`${localhost}/business`,//Api服务器域名-开发环境
     Root_wxurl_dev:`${localhost}`,//接口测试-微信小程序-开发环境

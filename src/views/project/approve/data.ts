@@ -2,13 +2,6 @@ import { computed } from 'vue';
 import type { TableColumnData } from '@arco-design/web-vue/es/table/interface';
 export const columns = computed<TableColumnData[]>(() => [
      {
-       title:  '编号',
-       dataIndex: 'id',
-       slotName: 'id',
-       width: 50,
-       align:'center'
-     },
-     {
       title:  '用户',
       dataIndex: 'name',
       slotName: 'name',
@@ -19,11 +12,13 @@ export const columns = computed<TableColumnData[]>(() => [
       title:  '文件名',
       dataIndex: 'file_name',
       slotName: 'file_name',
-      width: 120,
+      ellipsis: true,
+      tooltip: {position: 'left'},
+      width: 200,
       align:'center'
     },
     {
-      title:  '发文数',
+      title:  '条数',
       dataIndex: 'project_count',
       slotName: 'project_count',
       width: 50,
@@ -40,7 +35,7 @@ export const columns = computed<TableColumnData[]>(() => [
       title:  '审批状态',
       dataIndex: 'approve_status',
       slotName: 'approve_status',
-      width: 80,
+      width: 60,
       align:'center'
     },
      {
@@ -54,14 +49,14 @@ export const columns = computed<TableColumnData[]>(() => [
       title:  '审批人',
       dataIndex: 'approve_uid',
       slotName: 'approve_uid',
-      width: 100,
+      width: 80,
       align:'center'
     },
     {
       title: '操作',
       dataIndex: 'operations',
       slotName: 'operations',
-      width: 100,
+      width: 80,
       fixed: 'right',
       align:"center"
     
