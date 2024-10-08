@@ -9,10 +9,10 @@
               <template #prefix>平台类型:</template>
               <a-option v-for="item in platformList" :value="item.plat_name">{{ item.plat_name }}</a-option>
             </a-select>
-            <a-select v-model="formModel.fansCnt" :options="fansCntOptions" placeholder="粉丝数" :style="{width:'220px'}" >
+            <a-select v-model="formModel.fansCnt" :options="fansCntOptions" placeholder="不限" :style="{width:'220px'}" >
               <template #prefix>粉丝数:</template>
             </a-select>
-            <a-select v-model="formModel.priceRange" :options="pricesOptions" placeholder="价格区间" :style="{width:'230px'}" >
+            <a-select v-model="formModel.priceRange" :options="pricesOptions" placeholder="不限" :style="{width:'230px'}" >
               <template #prefix>
                 平台价:
               </template>
@@ -159,7 +159,7 @@
    //查询字段
    const generateFormModel = () => {
     return {
-      platform: [],
+      platform: ['不限'],
       fansCnt: '0',
       priceRange: '0',
       accountType: [],
@@ -186,6 +186,7 @@
 
   const fetchPlatList = async () => {
     try {
+      platformList.value.push({plat_name:"不限",id:0, order_id:0})
       const data= await getPlatList({});
       accountTypeList.value.length = 0
       for (let item of data) {
@@ -204,7 +205,7 @@
       for (let item of data.items) {
         accountTypeList.value.push(item)
       }
-      formModel.accountType = []
+      formModel.value.accountType = []
     } catch (err) {
       // you can report use errorHandler or other
     }

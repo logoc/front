@@ -149,10 +149,10 @@
    //查询字段
    const generateFormModel = () => {
     return {
-      platform: [],
+      platform: ['不限'],
       fansCnt: '0',
       priceRange: '0',
-      accountType: ['不限'],
+      accountType: ref(['不限']),
       projectNo: '',
       cooperateTime: 0,
       accountNikeName: "",
@@ -179,6 +179,7 @@
 
   const fetchPlatList = async () => {
     try {
+      platformList.value.push({plat_name:"不限",id:0, order_id:0})
       const data= await getPlatList({});
       accountTypeList.value.length = 0
       for (let item of data) {
@@ -189,7 +190,7 @@
     }
   };
 
-  //菜单改变
+  // 选择平台类型
   const handleChangePlat=async ()=>{
     try {
       const data= await getAccountList({plat_name:formModel.value.platform});
@@ -197,7 +198,7 @@
       for (let item of data.items) {
         accountTypeList.value.push(item)
       }
-      formModel.accountType = []
+      formModel.value.accountType = []
     } catch (err) {
       // you can report use errorHandler or other
     }
