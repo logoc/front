@@ -221,6 +221,7 @@
   })
   //查找
   const search = () => {
+    pagination.current = 1;
     fetchData();
   };
 

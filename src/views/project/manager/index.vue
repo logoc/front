@@ -214,7 +214,8 @@
   onMounted(()=>{
     })
   //查找
-  const search = () => {  
+  const search = () => {
+    pagination.current = 1;
     fetchData();
   };
   const reset = () => {
